@@ -1,0 +1,153 @@
+/* 아벨학원 홈페이지 공통 스타일
+   로고 색: 검정 #141414 · 주황 #FF5A1F · 노랑 #FFB400 · 파랑 #2563EB
+   - 상담 신청 버튼: 파랑 바탕 + 흰 글자
+   - 작은 주황 글자는 진한 주황 #BF4410 사용 (밝은 주황 글자는 읽기 어려움) */
+body{margin:0;background:#FFFFFF;font-family:'Noto Sans KR','Noto Sans CJK KR',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#141414;word-break:keep-all;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+a{color:#2563EB}a:hover{color:#1D4ED8}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #2563EB;outline-offset:3px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #2563EB;outline-offset:1px;border-color:#2563EB}
+::placeholder{color:#6B6B6B}
+
+/* 머리글 */
+.brand-strip{height:4px;background:linear-gradient(90deg,#FF5A1F 0%,#FF5A1F 33.33%,#FFB400 33.33%,#FFB400 66.66%,#2563EB 66.66%,#2563EB 100%)}
+.nav a{color:#3D3D3D;text-decoration:none}.nav a:hover{color:#141414}
+.nav a[aria-current="page"]{color:#141414;font-weight:700;box-shadow:inset 0 -3px 0 #FF5A1F}
+/* 머리글 오른쪽: 로그인 · 회원가입 (로그인하면 이름 · 로그아웃) */
+.util a{padding:10px 0;color:#3D3D3D;text-decoration:none}.util a:hover{color:#141414;text-decoration:underline}
+.util a[aria-current="page"]{color:#141414;font-weight:700}
+.util-sep{width:1px;height:12px;background:#CFCBC3}
+.util-btn{padding:10px 0;border:0;background:none;font:inherit;color:#3D3D3D;cursor:pointer}.util-btn:hover{color:#141414;text-decoration:underline}
+
+/* 바닥글 */
+.fnav a{color:#141414;text-decoration:none}.fnav a:hover{color:#141414;text-decoration:underline}
+.flink{color:#141414;text-decoration:none}.flink:hover{color:#141414;text-decoration:underline}
+.privacy-link{color:#141414;font-weight:700;font-size:15px;text-decoration:underline;text-decoration-color:#FF5A1F;text-decoration-thickness:2px;text-underline-offset:4px}
+.privacy-link:hover{color:#141414;text-decoration-color:#141414}
+.foot-right{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+/* 관리자 로그인 링크: 바닥글 맨 아래에 작게 */
+.adm-link{padding:4px 0;font-size:12px;color:#5C5C5C;text-decoration:none}.adm-link:hover{color:#141414;text-decoration:underline}
+
+/* 어두운 영역(검정 배경) */
+.crumb a{color:#FFFFFF;text-decoration:none}.crumb a:hover{color:#FFFFFF;text-decoration:underline}
+.light a{color:#FFFFFF}.light a:hover{color:#FFFFFF}
+.crumb a:focus-visible,.light a:focus-visible,.dark a:focus-visible{outline-color:#FFB400}
+
+/* 버튼·링크 */
+.btn-primary{background:#2563EB;color:#FFFFFF}.btn-primary:hover{background:#1D4ED8;color:#FFFFFF}
+.btn-line{background:#FFFFFF;color:#141414}.btn-line:hover{background:#F7F6F3;color:#141414}
+.more{text-decoration:none}.more:hover{text-decoration:underline}
+.ph{background:repeating-linear-gradient(135deg,#E9E6E0 0 14px,#F2F0EB 14px 28px)}
+
+/* 교육과정 탭 (국어 주황 · 영어 노랑 · 수학 파랑) */
+.tab{min-height:56px;margin-bottom:-1px;padding:0 28px;border:0;border-bottom:4px solid transparent;background:transparent;font-family:inherit;font-size:18px;font-weight:500;color:#5C5C5C;cursor:pointer}
+.tab:hover{color:#141414}
+.tab[aria-selected="true"]{color:#141414;font-weight:700}
+#tab-korean[aria-selected="true"]{border-bottom-color:#FF5A1F}
+#tab-english[aria-selected="true"]{border-bottom-color:#FFB400}
+#tab-math[aria-selected="true"]{border-bottom-color:#2563EB}
+
+/* 보충 강의 */
+.tab-grade[aria-selected="true"]{border-bottom-color:#141414}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
+.vcard{display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E4E1DB;border-radius:12px;overflow:hidden}
+.vthumb{position:relative;display:block;aspect-ratio:16/9;background:#141414;overflow:hidden}
+.vthumb img{display:block;width:100%;height:100%;object-fit:cover}
+.vplay-icon{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:#FF5A1F;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.vplay-icon::after{content:"";position:absolute;left:25px;top:20px;border-style:solid;border-width:12px 0 12px 19px;border-color:transparent transparent transparent #141414}
+.vthumb:hover .vplay-icon{background:#FF7843}
+.vthumb:focus-visible{outline:3px solid #FFB400;outline-offset:-3px}
+.vbody{display:flex;flex-direction:column;gap:10px;padding:20px 22px 22px}
+.vlink{align-self:flex-start;padding:4px 0;font-size:15px;font-weight:600;text-decoration:none}.vlink:hover{text-decoration:underline}
+.vpanel{padding-top:40px}
+.vhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:24px}
+.vhead h2{margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em}
+.vcount{font-size:15px;color:#5C5C5C}
+.vstatus{margin:0;padding:48px 24px;border-radius:12px;background:#F7F6F3;font-size:17px;line-height:1.7;color:#3D3D3D;text-align:center}
+.login-card{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:20px;padding:40px;border:1px solid #E4E1DB;border-radius:16px;background:#FFFFFF}
+.me-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:18px 24px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
+.me-grade{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:4px;background:#141414;color:#FFFFFF;font-size:13px;font-weight:700;vertical-align:1px}
+
+/* 로그인·관리 공통 입력 */
+.fld{display:flex;flex-direction:column;gap:8px}
+.fld label{font-size:15px;font-weight:600}
+.fld-hint{font-weight:400;color:#5C5C5C}
+select.field{padding:0 12px}
+.form-error{margin:0;padding:12px 14px;border-radius:8px;background:#FDECE6;color:#8A2E0C;font-size:15px;line-height:1.6}
+.form-error.form-ok{background:#E8F0FE;color:#1D4ED8}
+.btn-lg{min-height:52px;padding:0 24px;border:0;border-radius:8px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer}
+.btn-sm{min-height:44px;padding:0 16px;border:1px solid #141414;border-radius:8px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.btn-primary.btn-sm{border-color:#2563EB}
+button:disabled{opacity:.6;cursor:wait}
+.dlg{width:min(440px,calc(100vw - 32px));padding:32px;border:0;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.dlg::backdrop{background:rgba(20,20,20,.5)}
+.vtitle{margin:0;font-size:18px;line-height:1.5;font-weight:700}
+.vmeta{margin:0;font-size:14px;color:#5C5C5C}
+.subj{align-self:flex-start;padding:3px 9px;border-radius:4px;font-size:13px;font-weight:700}
+.subj-ko{background:#FF5A1F;color:#141414}.subj-en{background:#FFB400;color:#141414}.subj-ma{background:#2563EB;color:#FFFFFF}.subj-etc{background:#F2F0EB;color:#141414}
+.vempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:56px 24px;border:1px dashed #CFCBC3;border-radius:12px;background:#FAFAF8;text-align:center}
+.vempty p{margin:0;font-size:16px;line-height:1.7;color:#3D3D3D}
+
+/* 회원가입·로그인 */
+.auth-wrap{background:#F7F6F3;border-bottom:1px solid #E4E1DB}
+.auth-card{margin:0 auto;display:flex;flex-direction:column;gap:20px;padding:40px;border:1px solid #E4E1DB;border-radius:16px;background:#FFFFFF}
+.auth-or{display:flex;align-items:center;gap:12px;font-size:14px;color:#5C5C5C}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:#E4E1DB}
+.consent{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:10px;background:#F7F6F3}
+.consent dl{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;font-size:14px;line-height:1.6;color:#3D3D3D}
+.consent dt{font-weight:600;color:#141414}.consent dd{margin:0}
+.check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer}
+.check input{width:20px;height:20px;margin:0;accent-color:#2563EB;flex:none}
+.btn-block{display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none}
+
+/* 학원 소식 */
+.news{margin:0;padding:0;list-style:none;border-bottom:1px solid #E4E1DB}
+.news>li{border-top:1px solid #E4E1DB}
+.news-row,.news summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:22px 0}
+.news summary{list-style:none;cursor:pointer}.news summary::-webkit-details-marker{display:none}
+.news summary:hover .news-title{text-decoration:underline}
+.news-cat{display:inline-block;min-width:56px;padding:4px 10px;border-radius:4px;background:#F2F0EB;color:#141414;font-size:13px;font-weight:700;text-align:center}
+.news-title{flex:1 1 260px;font-size:17px;font-weight:500;color:#141414}
+.news time{font-size:15px;color:#5C5C5C}
+.news .chev{flex:none;transition:transform .2s}
+.news details[open] .chev{transform:rotate(180deg)}
+.news-body{margin:0;padding:0 4px 24px;font-size:16px;line-height:1.8;color:#3D3D3D;white-space:pre-line}
+.news-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:48px 24px;border-top:1px solid #E4E1DB;border-bottom:1px solid #E4E1DB;text-align:center}
+.news-empty p{margin:0}
+
+/* 상담 신청서 */
+.chip:hover{border-color:#141414}
+.field{height:52px;padding:0 16px;border:1px solid #8A8A8A;border-radius:8px;background:#FFFFFF;font-family:inherit;font-size:16px;color:#141414;width:100%}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* 자주 묻는 질문 */
+.faq{border-bottom:1px solid #E4E1DB}
+.faq summary{list-style:none;min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 4px;font-size:18px;font-weight:600;color:#141414;cursor:pointer}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:#BF4410}
+.faq .chev{flex:none;transition:transform .2s}
+.faq[open] .chev{transform:rotate(180deg)}
+.faq p{margin:0;padding:0 4px 24px;font-size:17px;line-height:1.8;color:#3D3D3D}
+
+/* 개인정보 처리방침 */
+.doc h2{margin:48px 0 12px;font-size:22px;font-weight:700;letter-spacing:-0.02em}
+.doc p,.doc li{font-size:16px;line-height:1.85;color:#2E2E2E}
+.doc ul,.doc ol{padding-left:22px;margin:8px 0}
+.doc table{width:100%;min-width:560px;border-collapse:collapse;font-size:15px;line-height:1.6}
+.doc th,.doc td{padding:12px 14px;border:1px solid #E4E1DB;text-align:left;vertical-align:top}
+.doc th{background:#F7F6F3;font-weight:600;color:#2E2E2E}
+
+/* 휴대폰 화면 */
+@media (max-width:640px){
+  .hdr-cta{display:none!important}
+  header .hdr-right{order:2}
+  header .nav{order:3;width:100%}
+  .auth-card{padding:28px 22px}
+  .nav{gap:0 16px!important;font-size:15px!important}
+  .sec{padding-top:64px!important;padding-bottom:64px!important}
+  .hero{padding-top:56px!important;padding-bottom:64px!important}
+  .pad-sm{padding:24px!important}
+  .tab{padding:0 18px}
+}

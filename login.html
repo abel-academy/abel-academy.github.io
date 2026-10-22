@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>로그인 | 아벨학원</title>
+<meta name="description" content="아벨학원 회원 로그인">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+
+<header style="background: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px;">
+<a href="index.html" aria-label="아벨학원 홈으로" style="display: flex; align-items: center; gap: 12px; padding: 4px 0; text-decoration: none;">
+<img src="logo-mark.png" alt="" width="333" height="176" style="display: block; height: 44px; width: auto;">
+<span style="font-size: 20px; font-weight: 700; color: #141414; letter-spacing: -0.02em;">아벨학원</span>
+</a>
+<nav class="nav" aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 32px; font-size: 16px; font-weight: 500;">
+<a href="index.html" style="padding: 12px 0;">홈</a>
+<a href="about.html" style="padding: 12px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="videos.html" style="padding: 12px 0;">보충 강의</a>
+<a href="contact.html" style="padding: 12px 0;">입학 상담</a>
+</nav>
+<div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
+<div id="auth-links" class="util" style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500;">
+<a href="login.html" aria-current="page">로그인</a>
+<span class="util-sep" aria-hidden="true"></span>
+<a href="signup.html">회원가입</a>
+</div>
+<a href="contact.html" class="btn-primary hdr-cta" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none;">상담 신청</a>
+</div>
+</div>
+<div class="brand-strip" aria-hidden="true"></div>
+</header>
+
+<main class="auth-wrap">
+<div style="max-width: 1200px; margin: 0 auto; padding: 72px 24px 96px;">
+<div class="auth-card" style="max-width: 440px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em;">로그인</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">회원가입 때 정한 아이디와 비밀번호를 입력해 주세요.</p>
+</div>
+<p id="lg-status" class="vstatus" role="status" style="padding: 20px;" hidden></p>
+<div id="lg-already" hidden style="display: flex; flex-direction: column; gap: 12px;">
+<p style="margin: 0; padding: 14px 16px; border-radius: 8px; background: #E8F0FE; color: #1D4ED8; font-size: 15px; line-height: 1.6;">이미 로그인되어 있어요.</p>
+<a href="videos.html" class="btn-primary btn-lg btn-block">보충 강의 보러 가기</a>
+<button type="button" id="lg-out" class="btn-line btn-sm">로그아웃</button>
+</div>
+<form id="login-form" novalidate style="display: flex; flex-direction: column; gap: 18px;">
+<div class="fld"><label for="lg-id">아이디</label><input id="lg-id" class="field" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+<div class="fld"><label for="lg-pw">비밀번호</label><input id="lg-pw" class="field" type="password" autocomplete="current-password" required></div>
+<p id="lg-error" class="form-error" role="alert" hidden></p>
+<button type="submit" class="btn-primary btn-lg">로그인</button>
+</form>
+<div class="auth-or">아직 회원이 아니라면</div>
+<a href="signup.html" class="btn-line btn-lg btn-block" style="border: 1px solid #141414;">회원가입</a>
+<p style="margin: 0; text-align: center; font-size: 14px; line-height: 1.7; color: #5C5C5C;">아이디나 비밀번호를 잊었다면 학원(<a href="tel:01020787098">010-2078-7098</a>)으로 문의해 주세요.</p>
+</div>
+</div>
+</main>
+
+<footer style="background: #F2F0EB; color: #3D3D3D; border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 40px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 40px;">
+<img src="logo-full.png" alt="아벨학원 입시 전문 학원" width="720" height="631" style="display: block; width: 132px; height: auto;">
+<div style="flex: 1 1 380px; font-size: 15px; line-height: 1.9;">
+<div>학원명 아벨학원 · 교습과목 국어, 영어, 수학</div>
+<div>주소 경기도 안산시 상록구 이동 광덕1로 356(네스트빌) 201호</div>
+<div>전화 <a class="flink" href="tel:01020787098">010-2078-7098</a> · 운영 시간 오후 2시 ~ 오후 10시</div>
+</div>
+<nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
+<a href="about.html" style="padding: 6px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="videos.html" style="padding: 6px 0;">보충 강의</a>
+<a href="contact.html" style="padding: 6px 0;">입학 상담</a>
+</nav>
+</div>
+<div style="border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 14px; color: #5C5C5C;">
+<a href="privacy.html" class="privacy-link">개인정보 처리방침</a>
+<span class="foot-right"><span>© 2026 아벨학원. All rights reserved.</span><a href="admin.html" class="adm-link" rel="nofollow">관리자</a></span>
+</div>
+</div>
+</footer>
+
+<script type="module" src="session.js"></script>
+<script type="module" src="login-page.js"></script>
+</body>
+</html>

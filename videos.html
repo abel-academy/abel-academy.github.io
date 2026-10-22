@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>보충 강의 | 아벨학원</title>
+<meta name="description" content="아벨학원 고등부 학년별 보충 강의 (회원 전용)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+
+<header style="background: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px;">
+<a href="index.html" aria-label="아벨학원 홈으로" style="display: flex; align-items: center; gap: 12px; padding: 4px 0; text-decoration: none;">
+<img src="logo-mark.png" alt="" width="333" height="176" style="display: block; height: 44px; width: auto;">
+<span style="font-size: 20px; font-weight: 700; color: #141414; letter-spacing: -0.02em;">아벨학원</span>
+</a>
+<nav class="nav" aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 32px; font-size: 16px; font-weight: 500;">
+<a href="index.html" style="padding: 12px 0;">홈</a>
+<a href="about.html" style="padding: 12px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="videos.html" aria-current="page" style="padding: 12px 0;">보충 강의</a>
+<a href="contact.html" style="padding: 12px 0;">입학 상담</a>
+</nav>
+<div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
+<div id="auth-links" class="util" style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500;">
+<a href="login.html">로그인</a>
+<span class="util-sep" aria-hidden="true"></span>
+<a href="signup.html">회원가입</a>
+</div>
+<a href="contact.html" class="btn-primary hdr-cta" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none;">상담 신청</a>
+</div>
+</div>
+<div class="brand-strip" aria-hidden="true"></div>
+</header>
+
+<main>
+<section style="background: #141414; color: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 64px 24px 72px; display: flex; flex-direction: column; gap: 16px;">
+<nav class="crumb" aria-label="현재 위치" style="display: flex; gap: 8px; font-size: 14px; color: #CFCFCF;">
+<a href="index.html">홈</a><span aria-hidden="true">/</span><span>보충 강의</span>
+</nav>
+<h1 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">보충 강의</h1>
+<p style="margin: 0; max-width: 640px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">결석했거나 다시 듣고 싶은 수업을 학년별로 확인하세요. 로그인한 회원만 볼 수 있어요.</p>
+</div>
+</section>
+
+<section aria-label="보충 강의" style="padding: 56px 0 96px;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+
+<p id="v-status" class="vstatus" role="status">불러오는 중…</p>
+
+<!-- 로그인 -->
+<div id="v-login" class="login-card pad-sm" hidden>
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; background: #F2F0EB; color: #141414; font-size: 13px; font-weight: 700;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5" stroke="#141414" stroke-width="1.6"></rect><path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="#141414" stroke-width="1.6"></path></svg>회원 전용</span>
+<h2 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">로그인이 필요해요</h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">보충 강의는 로그인한 회원만 볼 수 있어요.</p>
+</div>
+<form id="login-form" novalidate style="display: flex; flex-direction: column; gap: 18px;">
+<div class="fld">
+<label for="lg-id">아이디</label>
+<input id="lg-id" class="field" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+</div>
+<div class="fld">
+<label for="lg-pw">비밀번호</label>
+<input id="lg-pw" class="field" type="password" autocomplete="current-password" required>
+</div>
+<p id="lg-error" class="form-error" role="alert" hidden></p>
+<button type="submit" class="btn-primary btn-lg">로그인</button>
+</form>
+<p style="margin: 0; text-align: center; font-size: 15px; color: #3D3D3D;">아직 회원이 아니라면 <a href="signup.html" style="font-weight: 700;">회원가입</a></p>
+<p style="margin: 0; text-align: center; font-size: 14px; line-height: 1.7; color: #5C5C5C;">아이디나 비밀번호를 잊었다면 학원(<a href="tel:01020787098">010-2078-7098</a>)으로 문의해 주세요.</p>
+</div>
+
+<!-- 강의 목록 (로그인한 학생에게만 보임) -->
+<div id="v-list" hidden>
+<div class="me-bar">
+<p style="margin: 0; font-size: 16px;"><strong id="me-name"></strong> 학생 <span id="me-grade" class="me-grade"></span></p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<button type="button" id="btn-pw" class="btn-line btn-sm">비밀번호 변경</button>
+<button type="button" id="btn-logout" class="btn-line btn-sm">로그아웃</button>
+</div>
+</div>
+
+<div role="tablist" aria-label="학년 선택" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E4E1DB; margin-top: 32px;">
+<button type="button" role="tab" class="tab tab-grade" id="tab-g1" aria-controls="panel-g1" aria-selected="true">고1</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-g2" aria-controls="panel-g2" aria-selected="false" tabindex="-1">고2</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-g3" aria-controls="panel-g3" aria-selected="false" tabindex="-1">고3</button>
+</div>
+
+<div role="tabpanel" id="panel-g1" aria-labelledby="tab-g1" class="vpanel" data-grade="고1"></div>
+<div role="tabpanel" id="panel-g2" aria-labelledby="tab-g2" class="vpanel" data-grade="고2" hidden></div>
+<div role="tabpanel" id="panel-g3" aria-labelledby="tab-g3" class="vpanel" data-grade="고3" hidden></div>
+
+<div class="pad-sm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 56px; padding: 28px 32px; border-radius: 12px; background: #F7F6F3;">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700;">이용 안내</h2>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.7; color: #3D3D3D;">
+<li>영상을 누르면 유튜브에서 열려요.</li>
+<li>보충 강의는 아벨학원 회원을 위한 자료예요. 영상 주소를 외부에 공유하지 말아 주세요.</li>
+<li>함께 쓰는 컴퓨터에서는 다 본 뒤 꼭 로그아웃해 주세요.</li>
+</ul>
+</div>
+</div>
+
+<noscript><p style="margin: 0; font-size: 16px;">보충 강의를 보려면 브라우저의 자바스크립트를 켜 주세요.</p></noscript>
+</div>
+</section>
+</main>
+
+<dialog id="pw-dialog" class="dlg" aria-labelledby="pw-title">
+<form id="pw-form" novalidate style="display: flex; flex-direction: column; gap: 16px;">
+<h2 id="pw-title" style="margin: 0; font-size: 22px; font-weight: 700;">비밀번호 변경</h2>
+<div class="fld"><label for="pw-cur">지금 비밀번호</label><input id="pw-cur" class="field" type="password" autocomplete="current-password" required></div>
+<div class="fld"><label for="pw-new">새 비밀번호 <span class="fld-hint">(8자 이상 권장)</span></label><input id="pw-new" class="field" type="password" autocomplete="new-password" minlength="6" required></div>
+<div class="fld"><label for="pw-new2">새 비밀번호 확인</label><input id="pw-new2" class="field" type="password" autocomplete="new-password" required></div>
+<p id="pw-msg" class="form-error" role="alert" hidden></p>
+<div style="display: flex; justify-content: flex-end; gap: 8px;">
+<button type="button" id="pw-cancel" class="btn-line btn-sm">취소</button>
+<button type="submit" class="btn-primary btn-sm">변경하기</button>
+</div>
+</form>
+</dialog>
+
+<footer style="background: #F2F0EB; color: #3D3D3D; border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 40px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 40px;">
+<img src="logo-full.png" alt="아벨학원 입시 전문 학원" width="720" height="631" style="display: block; width: 132px; height: auto;">
+<div style="flex: 1 1 380px; font-size: 15px; line-height: 1.9;">
+<div>학원명 아벨학원 · 교습과목 국어, 영어, 수학</div>
+<div>주소 경기도 안산시 상록구 이동 광덕1로 356(네스트빌) 201호</div>
+<div>전화 <a class="flink" href="tel:01020787098">010-2078-7098</a> · 운영 시간 오후 2시 ~ 오후 10시</div>
+</div>
+<nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
+<a href="about.html" style="padding: 6px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="videos.html" style="padding: 6px 0;">보충 강의</a>
+<a href="contact.html" style="padding: 6px 0;">입학 상담</a>
+</nav>
+</div>
+<div style="border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 14px; color: #5C5C5C;">
+<a href="privacy.html" class="privacy-link">개인정보 처리방침</a>
+<span class="foot-right"><span>© 2026 아벨학원. All rights reserved.</span><a href="admin.html" class="adm-link" rel="nofollow">관리자</a></span>
+</div>
+</div>
+</footer>
+
+<script type="module" src="videos-page.js"></script>
+<script>
+// 인터넷 문제 등으로 로그인 기능을 불러오지 못했을 때 안내
+setTimeout(function () {
+  var s = document.getElementById('v-status');
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '보충 강의를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+}, 10000);
+</script>
+<script type="module" src="session.js"></script>
+</body>
+</html>
