@@ -2,7 +2,7 @@
 // 대시보드 · 상담 신청서 · 신청 통계 · 학생 관리(접속 통계) · 시청 내역 · 보충 강의 · 공지 · 관리자(가입 승인)
 import * as be from './backend.js';
 import {
-  GRADES_HIGH, SUBJECTS, SUBJECT_CLASS, APPLY_GRADES, APPLY_TIMES, ID_RE,
+  GRADES_ALL, SUBJECTS, SUBJECT_CLASS, APPLY_GRADES, APPLY_TIMES, ID_RE,
   youtubeId, thumbUrl, formatDate, formatDateTime, todayString, monthKey, el, friendlyError
 } from './common.js';
 
@@ -280,11 +280,14 @@ function renderHome() {
   const uniq = (list) => new Set(list.map((x) => x.uid)).size;
   const newApps = apps.filter((a) => a.status !== 'contacted');
 
-  $('#home-alert').replaceChildren(reqs.length
-    ? el('div', { class: 'alert' },
-        el('span', {}, el('strong', { text: `관리자 가입 승인 대기 ${reqs.length}건` }), ' — 아는 사람인지 확인한 뒤 승인해 주세요.'),
-        (() => { const b = el('button', { type: 'button', class: 'a-btn small', text: '승인하러 가기' }); b.addEventListener('click', () => openView('admins', true)); return b; })())
-    : '');
+  const pendingKids = students.filter((s) => s.guardianStatus === 'pending');
+  const goBtn = (text, view) => { const b = el('button', { type: 'button', class: 'a-btn small', text }); b.addEventListener('click', () => openView(view, true)); return b; };
+  $('#home-alert').replaceChildren(...[
+    reqs.length ? el('div', { class: 'alert' },
+      el('span', {}, el('strong', { text: `관리자 가입 승인 대기 ${reqs.length}건` }), ' — 아는 사람인지 확인한 뒤 승인해 주세요.'), goBtn('승인하러 가기', 'admins')) : null,
+    pendingKids.length ? el('div', { class: 'alert' },
+      el('span', {}, el('strong', { text: `보호자 동의 확인 대기 ${pendingKids.length}명` }), ' — 보호자께 전화로 동의를 확인한 뒤 학생 관리에서 \'동의 확인\'을 눌러 주세요.'), goBtn('학생 관리로 가기', 'students')) : null
+  ].filter(Boolean));
 
   $('#home-kpis').replaceChildren(
     kpi('확인 전 상담 신청', newApps.length, '건', `이번 달 신청 ${apps.filter((a) => a.month === monthKey()).length}건`),
@@ -552,7 +555,8 @@ function renderStudents() {
     kpiPeople('전체 회원', list.length),
     kpiPeople('사용 중인 계정', active.length),
     kpiPeople('오늘 접속한 학생', list.filter((s) => s.lastLoginAt && startOfDay(s.lastLoginAt).getTime() === startOfDay(now).getTime()).length),
-    kpiPeople('최근 7일 접속한 학생', list.filter((s) => withinDays(s.lastLoginAt, 7)).length)
+    kpiPeople('최근 7일 접속한 학생', list.filter((s) => withinDays(s.lastLoginAt, 7)).length),
+    kpiPeople('보호자 확인 대기', list.filter((s) => s.guardianStatus === 'pending').length)
   );
   renderLoginStats();
 
@@ -562,12 +566,12 @@ function renderStudents() {
   const rows = list
     .filter((s) => (!q || String(s.name || '').toLowerCase().includes(q) || String(s.loginId || '').includes(q))
       && (!g || s.grade === g)
-      && (!st || (st === 'on' ? s.active : !s.active)))
-    .sort((a, b) => GRADES_HIGH.indexOf(a.grade) - GRADES_HIGH.indexOf(b.grade) || String(a.name || '').localeCompare(String(b.name || ''), 'ko'));
+      && (!st || (st === 'on' ? s.active : st === 'pending' ? s.guardianStatus === 'pending' : (!s.active && s.guardianStatus !== 'pending'))))
+    .sort((a, b) => GRADES_ALL.indexOf(a.grade) - GRADES_ALL.indexOf(b.grade) || String(a.name || '').localeCompare(String(b.name || ''), 'ko'));
   $('#stu-count').textContent = `${rows.length}명`;
 
   $('#stu-table').replaceChildren(list.length
-    ? table([{ label: '이름' }, { label: '학년' }, { label: '아이디' }, { label: '가입' }, { label: '최근 접속' }, { label: '접속 횟수', num: true }, { label: '상태' }, { label: '관리' }],
+    ? table([{ label: '이름' }, { label: '학년' }, { label: '아이디' }, { label: '가입' }, { label: '보호자' }, { label: '최근 접속' }, { label: '접속 횟수', num: true }, { label: '상태' }, { label: '관리' }],
         rows.map(studentRow), { empty: '조건에 맞는 학생이 없어요.' })
     : el('p', { class: 'empty', text: '아직 가입한 학생이 없어요. 학생이 홈페이지에서 회원가입하면 여기에 보여요.' }));
 
@@ -586,7 +590,7 @@ function renderLoginStats() {
   const values = days.map((d) => byDay[dayKey(d)].size);
   const uniqueStudents = new Map();
   logins.forEach((l) => uniqueStudents.set(l.uid, l.grade));
-  const gradeRows = GRADES_HIGH.map((g) => [g, [...uniqueStudents.values()].filter((x) => x === g).length]);
+  const gradeRows = GRADES_ALL.map((g) => [g, [...uniqueStudents.values()].filter((x) => x === g).length]);
 
   const { top, ticks } = niceScale(Math.max(0, ...values));
   const tip = el('div', { class: 'tip', 'aria-hidden': 'true', hidden: true });
@@ -622,27 +626,49 @@ function renderLoginStats() {
 }
 
 function studentRow(s) {
-  const gradeSel = el('select', { 'aria-label': `${s.name} 학년 변경` }, GRADES_HIGH.map((g) => el('option', { selected: g === s.grade, text: g })));
+  const gradeSel = el('select', { 'aria-label': `${s.name} 학년 변경` }, GRADES_ALL.map((g) => el('option', { selected: g === s.grade, text: g })));
   gradeSel.addEventListener('change', async () => {
     try { await be.updateStudent(s.uid, { grade: gradeSel.value }); s.grade = gradeSel.value; }
     catch (err) { alert(friendlyError(err)); gradeSel.value = s.grade; }
   });
-  const toggle = el('button', { type: 'button', class: 'a-btn small' + (s.active ? ' danger' : ''), text: s.active ? '사용 중지' : '다시 사용' });
-  toggle.addEventListener('click', async () => {
-    if (s.active && !confirm(`${s.name} 학생 계정을 사용 중지할까요? 중지하면 보충 강의를 볼 수 없어요.`)) return;
-    toggle.disabled = true;
-    try { await be.updateStudent(s.uid, { active: !s.active }); s.active = !s.active; renderStudents(); }
-    catch (err) { alert(friendlyError(err)); toggle.disabled = false; }
-  });
-  return el('tr', { class: s.active ? null : 'off' },
+  const pending = s.guardianStatus === 'pending';
+  let actions;
+  if (pending) {
+    const ok = el('button', { type: 'button', class: 'a-btn small primary', text: '동의 확인' });
+    ok.addEventListener('click', async () => {
+      if (!confirm(`${s.name} 학생의 보호자(${s.guardianName || ''}, ${s.guardianPhone || ''})께 전화로 동의를 확인하셨나요? 확인하면 바로 보충 강의를 볼 수 있어요.`)) return;
+      ok.disabled = true;
+      try { await be.approveGuardian(s.uid); s.active = true; s.guardianStatus = 'confirmed'; renderStudents(); }
+      catch (err) { alert(friendlyError(err)); ok.disabled = false; }
+    });
+    const del = el('button', { type: 'button', class: 'a-btn small danger', text: '삭제' });
+    del.addEventListener('click', async () => {
+      if (!confirm(`${s.name} 학생의 가입 신청을 삭제할까요? 보호자 동의가 확인되지 않으면 5일 안에 삭제해야 해요.`)) return;
+      del.disabled = true;
+      try { await be.deleteStudent(s.uid); cache.students = cache.students.filter((x) => x.uid !== s.uid); renderStudents(); }
+      catch (err) { alert(friendlyError(err)); del.disabled = false; }
+    });
+    actions = el('div', { class: 'a-row' }, ok, del);
+  } else {
+    actions = el('button', { type: 'button', class: 'a-btn small' + (s.active ? ' danger' : ''), text: s.active ? '사용 중지' : '다시 사용' });
+    actions.addEventListener('click', async () => {
+      if (s.active && !confirm(`${s.name} 학생 계정을 사용 중지할까요? 중지하면 보충 강의를 볼 수 없어요.`)) return;
+      actions.disabled = true;
+      try { await be.updateStudent(s.uid, { active: !s.active }); s.active = !s.active; renderStudents(); }
+      catch (err) { alert(friendlyError(err)); actions.disabled = false; }
+    });
+  }
+  const state = pending ? el('span', { class: 'pill wait', text: '보호자 확인 대기' }) : el('span', { class: 'pill ' + (s.active ? 'on' : 'off'), text: s.active ? '사용 중' : '사용 중지' });
+  return el('tr', { class: s.active || pending ? null : 'off' },
     el('td', {}, el('strong', { text: s.name })),
     el('td', {}, gradeSel),
     el('td', { text: s.loginId }),
     el('td', { text: s.selfSignup ? '직접 가입' : '학원 생성' }),
+    el('td', {}, s.guardianName ? [el('div', { text: s.guardianName }), el('a', { href: 'tel:' + String(s.guardianPhone || '').replace(/[^0-9+]/g, ''), text: s.guardianPhone })] : '—'),
     el('td', { text: formatDateTime(s.lastLoginAt) }),
     el('td', { class: 'num', text: String(s.loginCount || 0) }),
-    el('td', {}, el('span', { class: 'pill ' + (s.active ? 'on' : 'off'), text: s.active ? '사용 중' : '사용 중지' })),
-    el('td', {}, toggle)
+    el('td', {}, state),
+    el('td', {}, actions)
   );
 }
 
@@ -775,6 +801,51 @@ function renderVideos() {
 /* ── 공지 관리 ─────────────────────────────────── */
 $('#nt-date').value = todayString();
 
+// 사진은 브라우저에서 줄인 뒤(긴 쪽 최대 1600px, JPG) 올림 — 한 장당 약 0.9MB 이하
+let ntImages = [];
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        for (const [maxSide, q] of [[1600, 0.82], [1400, 0.75], [1200, 0.7], [1000, 0.65], [800, 0.6]]) {
+          const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+          const w = Math.max(1, Math.round(img.naturalWidth * scale)), h = Math.max(1, Math.round(img.naturalHeight * scale));
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          const ctx = c.getContext('2d'); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+          const data = c.toDataURL('image/jpeg', q);
+          if (data.length <= 900000) { resolve({ data, w, h, name: file.name }); return; }
+        }
+        reject(Object.assign(new Error('too big'), { code: 'app/image-too-big' }));
+      } finally { URL.revokeObjectURL(url); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(Object.assign(new Error('read'), { code: 'app/image-read' })); };
+    img.src = url;
+  });
+}
+function renderNtPreview() {
+  const box = $('#nt-preview');
+  box.hidden = !ntImages.length;
+  box.replaceChildren(...ntImages.map((im, i) => {
+    const rm = el('button', { type: 'button', class: 'a-btn small', text: '빼기', 'aria-label': `${i + 1}번째 사진 빼기` });
+    rm.addEventListener('click', () => { ntImages.splice(i, 1); renderNtPreview(); });
+    return el('div', { class: 'nt-thumb' }, el('img', { src: im.data, alt: `올릴 사진 ${i + 1}` }), el('span', { text: `${im.w}×${im.h} · ${Math.round(im.data.length * 0.75 / 1024)}KB` }), rm);
+  }));
+}
+$('#nt-images').addEventListener('change', async (e) => {
+  const msg = $('#nt-msg');
+  const files = [...e.target.files];
+  e.target.value = '';
+  if (ntImages.length + files.length > 3) message(msg, '사진은 공지 하나에 3장까지 올릴 수 있어요. 앞의 사진부터 3장만 넣었어요.', 'err');
+  else message(msg, '');
+  for (const f of files.slice(0, 3 - ntImages.length)) {
+    try { ntImages.push(await shrinkImage(f)); }
+    catch (err) { message(msg, err.code === 'app/image-read' ? `'${f.name}' 사진을 열 수 없어요. JPG나 PNG 사진으로 올려 주세요.` : `'${f.name}' 사진이 너무 커요. 더 작은 사진으로 올려 주세요.`, 'err'); }
+  }
+  renderNtPreview();
+});
+
 $('#nt-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = $('#nt-msg');
@@ -786,9 +857,9 @@ $('#nt-form').addEventListener('submit', async (e) => {
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    await be.addNotice({ category: $('#nt-cat').value, title, body, date });
-    message(msg, `'${title}' 공지를 올렸어요. 홈페이지 첫 화면 '학원 소식'에 보여요.`, 'ok');
-    $('#nt-title').value = ''; $('#nt-body').value = '';
+    await be.addNotice({ category: $('#nt-cat').value, title, body, date, images: ntImages });
+    message(msg, `'${title}' 공지를 올렸어요. 홈페이지 '공지사항'과 첫 화면 '학원 소식'에 보여요.`, 'ok');
+    $('#nt-title').value = ''; $('#nt-body').value = ''; ntImages = []; renderNtPreview();
     await loadView('notices', true);
   } catch (err) {
     message(msg, friendlyError(err), 'err');
@@ -804,7 +875,7 @@ function renderNotices() {
     $('#nt-list').replaceChildren(el('p', { class: 'empty', text: '올린 공지가 없어요. 지금은 홈페이지에 \'아직 올라온 소식이 없어요\'로 보여요.' }));
     return;
   }
-  $('#nt-list').replaceChildren(table(['게시일', '분류', '제목', '홈페이지', ''], list.map((n, i) => {
+  $('#nt-list').replaceChildren(table(['게시일', '분류', '제목', '사진', '첫 화면', ''], list.map((n, i) => {
     const del = el('button', { type: 'button', class: 'a-btn small danger', text: '삭제' });
     del.addEventListener('click', async () => {
       if (!confirm(`'${n.title}' 공지를 삭제할까요?`)) return;
@@ -813,7 +884,8 @@ function renderNotices() {
       catch (err) { alert(friendlyError(err)); del.disabled = false; }
     });
     return el('tr', {}, el('td', { text: formatDate(n.date) }), el('td', { text: n.category }), el('td', {}, el('strong', { text: n.title })),
-      el('td', {}, el('span', { class: 'pill ' + (i < 5 ? 'on' : 'off'), text: i < 5 ? '보이는 중' : '목록 밖' })), el('td', {}, del));
+      el('td', { text: n.imageCount ? `${n.imageCount}장` : '—' }),
+      el('td', {}, el('span', { class: 'pill ' + (i < 5 ? 'on' : 'off'), text: i < 5 ? '보이는 중' : '공지사항에만' })), el('td', {}, del));
   })));
 }
 

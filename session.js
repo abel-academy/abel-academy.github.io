@@ -59,7 +59,8 @@ export async function logIn(id, password) {
   }
   if (!st.active) {
     await be.signOutUser();
-    throw Object.assign(new Error('inactive'), { code: 'app/inactive' });
+    const code = st.guardianStatus === 'pending' ? 'app/pending' : 'app/inactive';
+    throw Object.assign(new Error(code), { code });
   }
   await be.recordLogin(st).catch((e) => console.warn('접속 기록 실패', e));
   return { student: st };

@@ -8,9 +8,10 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, orderBy, limit, serverTimestamp, increment, writeBatch
+  collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import { firebaseConfig, STUDENT_EMAIL_DOMAIN } from './firebase-config.js';
+import { UNDER14_GRADES } from './common.js';
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 export const FOUNDER_SLOTS = 2; // 승인 없이 바로 관리자가 될 수 있는 인원 (처음 2명)
@@ -60,12 +61,15 @@ export async function signIn(idOrEmail, password) {
   return { uid: cred.user.uid, email: cred.user.email };
 }
 
-// 회원가입: 계정을 만들고(자동 로그인됨) 회원 정보를 저장. 가입 즉시 보충 강의를 볼 수 있음
-export async function signUp({ loginId, password, name, grade }) {
+// 회원가입: 계정을 만들고(자동 로그인됨) 회원 정보를 저장.
+// 중3~고3은 가입 즉시 사용, 초4~중2(만 14세 미만일 수 있음)는 학원이 보호자 동의를 확인한 뒤 사용
+export async function signUp({ loginId, password, name, grade, guardianName, guardianPhone }) {
   need();
   const id = normalizeLoginId(loginId);
   const cred = await createUserWithEmailAndPassword(auth, loginIdToEmail(id), password);
-  const profile = { name, grade, loginId: id, active: true, loginCount: 0, lastLoginAt: null, selfSignup: true };
+  const needsGuardian = UNDER14_GRADES.includes(grade);
+  const profile = { name, grade, loginId: id, active: !needsGuardian, loginCount: 0, lastLoginAt: null, selfSignup: true };
+  if (needsGuardian) Object.assign(profile, { guardianName, guardianPhone, guardianStatus: 'pending' });
   try {
     await setDoc(doc(db, 'students', cred.user.uid), { ...profile, createdAt: serverTimestamp() });
   } catch (e) {
@@ -251,9 +255,22 @@ export async function updateStudent(uid, fields) {
   need();
   const allowed = {};
   if ('active' in fields) allowed.active = Boolean(fields.active);
+  if ('guardianStatus' in fields) allowed.guardianStatus = fields.guardianStatus;
   if ('grade' in fields) allowed.grade = fields.grade;
   if ('name' in fields) allowed.name = fields.name;
   await updateDoc(doc(db, 'students', uid), allowed);
+}
+
+// 보호자 동의를 전화로 확인한 뒤 계정 사용 시작
+export async function approveGuardian(uid) {
+  need();
+  await updateDoc(doc(db, 'students', uid), { active: true, guardianStatus: 'confirmed' });
+}
+
+// 회원 정보 삭제 (보호자 동의가 확인되지 않은 가입 신청, 탈퇴 요청 등)
+export async function deleteStudent(uid) {
+  need();
+  await deleteDoc(doc(db, 'students', uid));
 }
 
 export async function listLogins(max = 1000) {
@@ -268,17 +285,35 @@ export async function listNotices(max = 50) {
   return rows(await getDocs(query(collection(db, 'notices'), orderBy('date', 'desc'), limit(max))));
 }
 
+// 공지 + 사진(최대 3장). 사진은 줄인 그림 데이터로 noticeImages에 한 장씩 저장 (유료 저장소 없이 무료로 운영)
 export async function addNotice(n) {
   need();
-  const ref = await addDoc(collection(db, 'notices'), {
-    category: n.category, title: n.title, body: n.body || '', date: n.date, createdAt: serverTimestamp()
+  const images = (n.images || []).slice(0, 3);
+  const ref = doc(collection(db, 'notices'));
+  const batch = writeBatch(db);
+  batch.set(ref, {
+    category: n.category, title: n.title, body: n.body || '', date: n.date, imageCount: images.length, createdAt: serverTimestamp()
   });
+  images.forEach((img, i) => {
+    batch.set(doc(collection(db, 'noticeImages')), { noticeId: ref.id, order: i, data: img.data, w: img.w, h: img.h });
+  });
+  await batch.commit();
   return ref.id;
+}
+
+export async function getNoticeImages(noticeId) {
+  need();
+  const snap = await getDocs(query(collection(db, 'noticeImages'), where('noticeId', '==', noticeId)));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => a.order - b.order);
 }
 
 export async function deleteNotice(id) {
   need();
-  await deleteDoc(doc(db, 'notices', id));
+  const imgs = await getDocs(query(collection(db, 'noticeImages'), where('noticeId', '==', id)));
+  const batch = writeBatch(db);
+  imgs.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(doc(db, 'notices', id));
+  await batch.commit();
 }
 
 /* ── 상담·특강 신청서 ───────────────────────────── */

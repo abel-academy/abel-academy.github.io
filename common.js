@@ -1,9 +1,14 @@
 // 학생 페이지·관리자 페이지가 함께 쓰는 작은 도구들
 export const GRADES_HIGH = ['고1', '고2', '고3'];
+// 회원·보충 강의 학년 (초4 ~ 고3)
+export const GRADES_ALL = ['초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+export const GRADE_GROUPS = [['초등부', ['초4', '초5', '초6']], ['중등부', ['중1', '중2', '중3']], ['고등부', ['고1', '고2', '고3']]];
+// 만 14세 미만일 수 있는 학년: 가입할 때 보호자(법정대리인) 동의 확인이 필요
+export const UNDER14_GRADES = ['초4', '초5', '초6', '중1', '중2'];
 export const SUBJECTS = ['국어', '영어', '수학'];
 export const SUBJECT_CLASS = { '국어': 'ko', '영어': 'en', '수학': 'ma' };
 export const APPLY_TYPES = ['입학 상담', '특강 신청'];
-export const APPLY_GRADES = ['중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'];
+export const APPLY_GRADES = ['초등학교 4학년', '초등학교 5학년', '초등학교 6학년', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'];
 export const APPLY_TIMES = ['평일 오후', '평일 저녁', '주말'];
 export const NOTICE_CATEGORIES = ['공지', '안내', '설명회', '모집', '행사'];
 export const ID_RE = /^[a-z0-9]{3,20}$/;
@@ -86,6 +91,7 @@ export function friendlyError(err) {
     'auth/operation-not-allowed': '회원가입이 아직 켜져 있지 않아요. 학원에 문의해 주세요.',
     'app/no-profile': '회원 정보를 찾을 수 없어요. 학원에 문의해 주세요.',
     'app/inactive': '사용이 중지된 계정이에요. 학원에 문의해 주세요.',
+    'app/pending': '보호자 동의를 확인하는 중이에요. 학원에서 보호자께 확인 연락을 드린 뒤 사용할 수 있어요.',
     'permission-denied': '권한이 없어요. 계정 상태나 보안 규칙 설정을 확인해 주세요.',
     'unavailable': '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.'
   };

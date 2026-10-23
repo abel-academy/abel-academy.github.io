@@ -51,6 +51,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 
 /* 보충 강의 */
 .tab-grade[aria-selected="true"]{border-bottom-color:#141414}
+.tab-gap{margin-left:20px}
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
 .vcard{display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E4E1DB;border-radius:12px;overflow:hidden}
 .vthumb{position:relative;display:block;aspect-ratio:16/9;background:#141414;overflow:hidden}
@@ -98,6 +99,7 @@ button:disabled{opacity:.6;cursor:wait}
 .consent{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:10px;background:#F7F6F3}
 .consent dl{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;font-size:14px;line-height:1.6;color:#3D3D3D}
 .consent dt{font-weight:600;color:#141414}.consent dd{margin:0}
+.consent.guardian{background:#FFF4E5;border:1px solid #FFD8A8}
 .check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer}
 .check input{width:20px;height:20px;margin:0;accent-color:#2563EB;flex:none}
 .btn-block{display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none}
@@ -116,6 +118,14 @@ button:disabled{opacity:.6;cursor:wait}
 .news-body{margin:0;padding:0 4px 24px;font-size:16px;line-height:1.8;color:#3D3D3D;white-space:pre-line}
 .news-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:48px 24px;border-top:1px solid #E4E1DB;border-bottom:1px solid #E4E1DB;text-align:center}
 .news-empty p{margin:0}
+a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-decoration:underline}
+.news-pic{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;background:#E8F0FE;color:#1D4ED8;font-size:12px;font-weight:700;vertical-align:2px}
+.news-detail{padding:0 4px 24px;display:flex;flex-direction:column;gap:16px}
+.news-detail .news-body{padding:0}
+.news-imgs{display:flex;flex-direction:column;gap:12px}
+.news-imgs img{display:block;max-width:100%;height:auto;border-radius:8px;border:1px solid #E4E1DB}
+.news-loading{margin:0;font-size:14px;color:#5C5C5C}
+.news-page details:target summary,.news-page details[open] summary .news-title{font-weight:700}
 
 /* 상담 신청서 */
 .chip:hover{border-color:#141414}
@@ -150,4 +160,6 @@ button:disabled{opacity:.6;cursor:wait}
   .hero{padding-top:56px!important;padding-bottom:64px!important}
   .pad-sm{padding:24px!important}
   .tab{padding:0 18px}
+  .tab-grade{padding:0 12px;font-size:16px}
+  .tab-gap{margin-left:8px}
 }

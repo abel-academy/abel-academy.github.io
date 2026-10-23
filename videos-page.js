@@ -1,7 +1,7 @@
 // 보충 강의 페이지: 로그인한(사용 중인) 회원에게만 영상 목록을 보여 줌
 import * as be from './backend.js';
 import { logIn } from './session.js';
-import { GRADES_HIGH, SUBJECT_CLASS, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
+import { SUBJECT_CLASS, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
 
 const $ = (s) => document.querySelector(s);
 const status = $('#v-status');
@@ -120,7 +120,9 @@ if (!be.configured) {
       }
       if (!st.active) {
         await be.signOutUser();
-        setLoginError('사용이 중지된 계정이에요. 학원에 문의해 주세요.');
+        setLoginError(st.guardianStatus === 'pending'
+          ? '보호자 동의를 확인하는 중이에요. 학원에서 보호자께 확인 연락을 드린 뒤 사용할 수 있어요.'
+          : '사용이 중지된 계정이에요. 학원에 문의해 주세요.');
         return;
       }
       await showStudent(st);

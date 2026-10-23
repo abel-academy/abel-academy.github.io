@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>보충 강의 | 아벨학원</title>
-<meta name="description" content="아벨학원 고등부 학년별 보충 강의 (회원 전용)">
+<meta name="description" content="아벨학원 학년별 보충 강의 (회원 전용)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -25,6 +25,7 @@
 <a href="index.html" style="padding: 12px 0;">홈</a>
 <a href="about.html" style="padding: 12px 0;">학원 소개</a>
 <a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="notices.html" style="padding: 12px 0;">공지사항</a>
 <a href="videos.html" aria-current="page" style="padding: 12px 0;">보충 강의</a>
 <a href="contact.html" style="padding: 12px 0;">입학 상담</a>
 </nav>
@@ -90,12 +91,24 @@
 </div>
 
 <div role="tablist" aria-label="학년 선택" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E4E1DB; margin-top: 32px;">
-<button type="button" role="tab" class="tab tab-grade" id="tab-g1" aria-controls="panel-g1" aria-selected="true">고1</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-e4" aria-controls="panel-e4" aria-selected="true">초4</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-e5" aria-controls="panel-e5" aria-selected="false" tabindex="-1">초5</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-e6" aria-controls="panel-e6" aria-selected="false" tabindex="-1">초6</button>
+<button type="button" role="tab" class="tab tab-grade tab-gap" id="tab-m1" aria-controls="panel-m1" aria-selected="false" tabindex="-1">중1</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-m2" aria-controls="panel-m2" aria-selected="false" tabindex="-1">중2</button>
+<button type="button" role="tab" class="tab tab-grade" id="tab-m3" aria-controls="panel-m3" aria-selected="false" tabindex="-1">중3</button>
+<button type="button" role="tab" class="tab tab-grade tab-gap" id="tab-g1" aria-controls="panel-g1" aria-selected="false" tabindex="-1">고1</button>
 <button type="button" role="tab" class="tab tab-grade" id="tab-g2" aria-controls="panel-g2" aria-selected="false" tabindex="-1">고2</button>
 <button type="button" role="tab" class="tab tab-grade" id="tab-g3" aria-controls="panel-g3" aria-selected="false" tabindex="-1">고3</button>
 </div>
 
-<div role="tabpanel" id="panel-g1" aria-labelledby="tab-g1" class="vpanel" data-grade="고1"></div>
+<div role="tabpanel" id="panel-e4" aria-labelledby="tab-e4" class="vpanel" data-grade="초4"></div>
+<div role="tabpanel" id="panel-e5" aria-labelledby="tab-e5" class="vpanel" data-grade="초5" hidden></div>
+<div role="tabpanel" id="panel-e6" aria-labelledby="tab-e6" class="vpanel" data-grade="초6" hidden></div>
+<div role="tabpanel" id="panel-m1" aria-labelledby="tab-m1" class="vpanel" data-grade="중1" hidden></div>
+<div role="tabpanel" id="panel-m2" aria-labelledby="tab-m2" class="vpanel" data-grade="중2" hidden></div>
+<div role="tabpanel" id="panel-m3" aria-labelledby="tab-m3" class="vpanel" data-grade="중3" hidden></div>
+<div role="tabpanel" id="panel-g1" aria-labelledby="tab-g1" class="vpanel" data-grade="고1" hidden></div>
 <div role="tabpanel" id="panel-g2" aria-labelledby="tab-g2" class="vpanel" data-grade="고2" hidden></div>
 <div role="tabpanel" id="panel-g3" aria-labelledby="tab-g3" class="vpanel" data-grade="고3" hidden></div>
 
@@ -139,6 +152,7 @@
 <nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
 <a href="about.html" style="padding: 6px 0;">학원 소개</a>
 <a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="notices.html" style="padding: 6px 0;">공지사항</a>
 <a href="videos.html" style="padding: 6px 0;">보충 강의</a>
 <a href="contact.html" style="padding: 6px 0;">입학 상담</a>
 </nav>

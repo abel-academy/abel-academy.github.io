@@ -163,11 +163,11 @@
 <div class="card-head"><h2>학생 목록 <span id="stu-count" class="card-sub"></span></h2>
 <div class="a-filters">
 <input id="sl-q" class="a-input" type="search" placeholder="이름·아이디 검색" aria-label="이름 또는 아이디 검색">
-<select id="sl-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><option>고1</option><option>고2</option><option>고3</option></select>
-<select id="sl-state" class="a-input" aria-label="상태"><option value="">전체 상태</option><option value="on">사용 중</option><option value="off">사용 중지</option></select>
+<select id="sl-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select>
+<select id="sl-state" class="a-input" aria-label="상태"><option value="">전체 상태</option><option value="on">사용 중</option><option value="pending">보호자 확인 대기</option><option value="off">사용 중지</option></select>
 </div>
 </div>
-<p class="view-note" style="margin-bottom: 14px;">학생은 홈페이지에서 직접 회원가입할 수 있어요. 퇴원했거나 학원생이 아닌 회원은 '사용 중지'하면 보충 강의를 볼 수 없어요.</p>
+<p class="view-note" style="margin-bottom: 14px;">학생은 홈페이지에서 직접 회원가입할 수 있어요. 초4~중2가 가입하면 '보호자 확인 대기'로 들어와요. 보호자께 전화로 동의를 확인한 뒤 '동의 확인'을 누르고, 동의가 확인되지 않으면 5일 안에 '삭제'해 주세요. 퇴원했거나 학원생이 아닌 회원은 '사용 중지'하면 보충 강의를 볼 수 없어요.</p>
 <div id="stu-table"></div>
 </div>
 
@@ -181,7 +181,7 @@
 <p class="view-note" style="margin: 12px 0 16px;">회원가입이 어려운 학생에게 계정을 만들어 줄 때 쓰세요. 만든 아이디와 비밀번호를 학생에게 알려 주세요.</p>
 <form id="stu-form" class="a-form" novalidate>
 <div class="a-fld"><label for="sf-name">이름</label><input id="sf-name" class="a-input" type="text" required maxlength="20"></div>
-<div class="a-fld"><label for="sf-grade">학년</label><select id="sf-grade" class="a-input"><option>고1</option><option>고2</option><option>고3</option></select></div>
+<div class="a-fld"><label for="sf-grade">학년</label><select id="sf-grade" class="a-input"><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select></div>
 <div class="a-fld"><label for="sf-id">아이디 <span class="hint">영문 소문자·숫자 3~20자</span></label><input id="sf-id" class="a-input" type="text" autocapitalize="none" spellcheck="false" required maxlength="20"></div>
 <div class="a-fld"><label for="sf-pw">처음 비밀번호 <span class="hint">6자 이상</span></label><div class="a-row"><input id="sf-pw" class="a-input" type="text" required minlength="6" maxlength="40"><button type="button" id="sf-gen" class="a-btn small" style="min-height: 42px;">자동</button></div></div>
 <button type="submit" class="a-btn primary" style="min-height: 42px;">계정 만들기</button>
@@ -196,7 +196,7 @@
 <h1>보충 강의 시청 내역</h1>
 <div class="a-filters">
 <select id="vw-range" class="a-input" aria-label="기간"><option value="7">최근 7일</option><option value="30" selected>최근 30일</option><option value="all">전체 기간</option></select>
-<select id="vw-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><option>고1</option><option>고2</option><option>고3</option></select>
+<select id="vw-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select>
 <input id="vw-q" class="a-input" type="search" placeholder="학생 이름·아이디" aria-label="학생 이름 또는 아이디 검색">
 <button type="button" class="a-btn" data-refresh="views">새로고침</button>
 </div>
@@ -217,7 +217,7 @@
 <div class="card">
 <div class="card-head"><h2>보충 강의 등록</h2><span class="card-sub">유튜브에 '일부 공개'로 올린 뒤 주소를 붙여 넣으세요</span></div>
 <form id="vid-form" class="a-form" novalidate>
-<div class="a-fld"><label for="vf-grade">학년</label><select id="vf-grade" class="a-input"><option>고1</option><option>고2</option><option>고3</option></select></div>
+<div class="a-fld"><label for="vf-grade">학년</label><select id="vf-grade" class="a-input"><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select></div>
 <div class="a-fld"><label for="vf-subject">과목</label><select id="vf-subject" class="a-input"><option>국어</option><option>영어</option><option>수학</option></select></div>
 <div class="a-fld span-2"><label for="vf-title">강의 제목</label><input id="vf-title" class="a-input" type="text" required maxlength="80" placeholder="예) 다항식의 연산 보충"></div>
 <div class="a-fld span-2"><label for="vf-url">유튜브 주소</label><input id="vf-url" class="a-input" type="url" required placeholder="https://youtu.be/..."></div>
@@ -229,7 +229,7 @@
 </div>
 <div class="card">
 <div class="card-head"><h2>등록된 보충 강의 <span id="vid-count" class="card-sub"></span></h2>
-<div class="a-filters"><select id="vl-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><option>고1</option><option>고2</option><option>고3</option></select></div>
+<div class="a-filters"><select id="vl-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select></div>
 </div>
 <div id="vid-list"></div>
 </div>
@@ -241,14 +241,16 @@
 <h1>공지 관리</h1>
 <button type="button" class="a-btn" data-refresh="notices">새로고침</button>
 </div>
-<p class="view-note">여기서 올린 공지가 홈페이지 첫 화면 '학원 소식'에 최신순으로 최대 5개 보여요. 공지가 하나도 없으면 '아직 올라온 소식이 없어요'로 보여요.</p>
+<p class="view-note">여기서 올린 공지는 홈페이지 '공지사항' 메뉴에 모두 보이고, 첫 화면 '학원 소식'에는 최신순으로 5개까지 보여요. 공지가 하나도 없으면 '아직 올라온 소식이 없어요'로 보여요. 학생 얼굴이 나온 사진은 동의를 받은 뒤 올려 주세요.</p>
 <div class="card">
 <div class="card-head"><h2>공지 올리기</h2></div>
 <form id="nt-form" class="a-form" novalidate>
 <div class="a-fld"><label for="nt-cat">분류</label><select id="nt-cat" class="a-input"><option>공지</option><option>안내</option><option>설명회</option><option>모집</option><option>행사</option></select></div>
 <div class="a-fld"><label for="nt-date">게시일</label><input id="nt-date" class="a-input" type="date" required></div>
 <div class="a-fld span-2"><label for="nt-title">제목</label><input id="nt-title" class="a-input" type="text" required maxlength="100" placeholder="예) 겨울방학 특강 모집 안내"></div>
-<div class="a-fld span-all"><label for="nt-body">내용 <span class="hint">선택 · 홈페이지에서 제목을 누르면 펼쳐져요</span></label><textarea id="nt-body" class="a-input a-textarea" rows="5" maxlength="3000"></textarea></div>
+<div class="a-fld span-all"><label for="nt-body">내용 <span class="hint">선택 · 공지사항 페이지에서 제목을 누르면 펼쳐져요</span></label><textarea id="nt-body" class="a-input a-textarea" rows="5" maxlength="3000"></textarea></div>
+<div class="a-fld span-all"><label for="nt-images">사진 <span class="hint">선택 · 최대 3장 · 큰 사진은 자동으로 줄여서 올려요 (JPG·PNG)</span></label><input id="nt-images" class="a-input a-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div>
+<div id="nt-preview" class="nt-preview span-all" hidden></div>
 <button type="submit" class="a-btn primary" style="min-height: 42px;">공지 올리기</button>
 </form>
 <p id="nt-msg" class="a-msg" role="status" hidden></p>
