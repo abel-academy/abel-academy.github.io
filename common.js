@@ -10,7 +10,18 @@ export const SUBJECT_CLASS = { '국어': 'ko', '영어': 'en', '수학': 'ma' };
 export const APPLY_TYPES = ['입학 상담', '특강 신청'];
 export const APPLY_GRADES = ['초등학교 4학년', '초등학교 5학년', '초등학교 6학년', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'];
 export const APPLY_TIMES = ['평일 오후', '평일 저녁', '주말'];
+// 특강 구분: 관리자 화면에서 추가·삭제 (아직 한 번도 저장하지 않았을 때 쓰는 기본값)
+export const DEFAULT_SPECIALS = ['겨울방학 특강', '여름방학 특강', '시험 대비 특강'];
+export const SPECIAL_MAX = 20;
 export const NOTICE_CATEGORIES = ['공지', '안내', '설명회', '모집', '행사'];
+export const CLASS_SUBJECTS = ['국어', '영어', '수학', '기타'];
+// 클래스 스탬프판 칸 수 (클래스마다 관리자가 정함)
+export const STAMP_MAX_DEFAULT = 10;
+export const STAMP_MAX_LIMIT = 100;
+export function stampMaxOf(c) {
+  const n = Number(c && c.stampMax);
+  return Number.isInteger(n) && n >= 1 && n <= STAMP_MAX_LIMIT ? n : STAMP_MAX_DEFAULT;
+}
 export const ID_RE = /^[a-z0-9]{3,20}$/;
 
 // 로그인 뒤 돌아갈 페이지: 이 홈페이지 안의 페이지 이름만 허용 (다른 사이트로 보내는 주소 차단)
@@ -51,6 +62,19 @@ export function todayString() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// 숙제 마감일 표시: { text: 'D-3', kind: 'soon' | 'today' | 'later' | 'past', date: '10.30(목)' }
+export function dueInfo(due) {
+  const m = String(due || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const t = new Date(); const today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  const left = Math.round((d - today) / 864e5);
+  const date = `${Number(m[2])}.${Number(m[3])}(${'일월화수목금토'[d.getDay()]})`;
+  if (left < 0) return { text: '마감 지남', kind: 'past', date };
+  if (left === 0) return { text: '오늘 마감', kind: 'today', date };
+  return { text: `D-${left}`, kind: left <= 3 ? 'soon' : 'later', date };
+}
+
 export function monthKey(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 }
@@ -88,6 +112,8 @@ export function friendlyError(err) {
     'auth/email-already-in-use': '이미 사용 중인 아이디예요. 다른 아이디를 정해 주세요.',
     'auth/weak-password': '비밀번호는 6자 이상이어야 해요.',
     'auth/requires-recent-login': '보안을 위해 다시 로그인한 뒤 시도해 주세요.',
+    'auth/missing-email': '이메일 주소를 입력해 주세요.',
+    'auth/unauthorized-continue-uri': 'Firebase 승인된 도메인 설정을 확인해 주세요.',
     'auth/operation-not-allowed': '회원가입이 아직 켜져 있지 않아요. 학원에 문의해 주세요.',
     'app/no-profile': '회원 정보를 찾을 수 없어요. 학원에 문의해 주세요.',
     'app/inactive': '사용이 중지된 계정이에요. 학원에 문의해 주세요.',

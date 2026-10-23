@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>보충 강의 | 아벨학원</title>
-<meta name="description" content="아벨학원 학년별 보충 강의 (회원 전용)">
+<title>학생 전용 | 아벨학원</title>
+<meta name="description" content="아벨학원 학생 전용: 학년별 보충 강의와 내 클래스(숙제·스탬프)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
 <a href="about.html" style="padding: 12px 0;">학원 소개</a>
 <a href="programs.html" style="padding: 12px 0;">교육과정</a>
 <a href="notices.html" style="padding: 12px 0;">공지사항</a>
-<a href="videos.html" aria-current="page" style="padding: 12px 0;">보충 강의</a>
+<a href="videos.html" aria-current="page" style="padding: 12px 0;">학생 전용</a>
 <a href="contact.html" style="padding: 12px 0;">입학 상담</a>
 </nav>
 <div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
@@ -45,14 +45,14 @@
 <section style="background: #141414; color: #FFFFFF;">
 <div style="max-width: 1200px; margin: 0 auto; padding: 64px 24px 72px; display: flex; flex-direction: column; gap: 16px;">
 <nav class="crumb" aria-label="현재 위치" style="display: flex; gap: 8px; font-size: 14px; color: #CFCFCF;">
-<a href="index.html">홈</a><span aria-hidden="true">/</span><span>보충 강의</span>
+<a href="index.html">홈</a><span aria-hidden="true">/</span><span>학생 전용</span>
 </nav>
-<h1 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">보충 강의</h1>
-<p style="margin: 0; max-width: 640px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">결석했거나 다시 듣고 싶은 수업을 학년별로 확인하세요. 로그인한 회원만 볼 수 있어요.</p>
+<h1 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">학생 전용</h1>
+<p style="margin: 0; max-width: 640px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">보충 강의와 내 클래스의 숙제 공지·스탬프를 확인하세요. 로그인한 회원만 볼 수 있어요.</p>
 </div>
 </section>
 
-<section aria-label="보충 강의" style="padding: 56px 0 96px;">
+<section aria-label="학생 전용" style="padding: 56px 0 96px;">
 <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
 
 <p id="v-status" class="vstatus" role="status">불러오는 중…</p>
@@ -62,7 +62,7 @@
 <div style="display: flex; flex-direction: column; gap: 10px;">
 <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; background: #F2F0EB; color: #141414; font-size: 13px; font-weight: 700;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5" stroke="#141414" stroke-width="1.6"></rect><path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="#141414" stroke-width="1.6"></path></svg>회원 전용</span>
 <h2 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">로그인이 필요해요</h2>
-<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">보충 강의는 로그인한 회원만 볼 수 있어요.</p>
+<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">보충 강의와 클래스(숙제·스탬프)는 로그인한 회원만 볼 수 있어요.</p>
 </div>
 <form id="login-form" novalidate style="display: flex; flex-direction: column; gap: 18px;">
 <div class="fld">
@@ -80,7 +80,7 @@
 <p style="margin: 0; text-align: center; font-size: 14px; line-height: 1.7; color: #5C5C5C;">아이디나 비밀번호를 잊었다면 학원(<a href="tel:01020787098">010-2078-7098</a>)으로 문의해 주세요.</p>
 </div>
 
-<!-- 강의 목록 (로그인한 학생에게만 보임) -->
+<!-- 학생 전용 화면 (로그인한 학생에게만 보임) -->
 <div id="v-list" hidden>
 <div class="me-bar">
 <p style="margin: 0; font-size: 16px;"><strong id="me-name"></strong> 학생 <span id="me-grade" class="me-grade"></span></p>
@@ -90,7 +90,13 @@
 </div>
 </div>
 
-<div role="tablist" aria-label="학년 선택" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E4E1DB; margin-top: 32px;">
+<div class="stabs" role="tablist" aria-label="학생 전용 메뉴">
+<button type="button" role="tab" class="stab" id="stab-videos" aria-controls="spanel-videos" aria-selected="true"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="2"></rect><path d="M8.5 7.5v5l4-2.5-4-2.5z" fill="currentColor"></path></svg>보충 강의</button>
+<button type="button" role="tab" class="stab" id="stab-class" aria-controls="spanel-class" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 7.8l5-.7L10 2.5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"></path></svg>클래스</button>
+</div>
+
+<div role="tabpanel" id="spanel-videos" aria-labelledby="stab-videos">
+<div role="tablist" aria-label="학년 선택" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E4E1DB; margin-top: 28px;">
 <button type="button" role="tab" class="tab tab-grade" id="tab-e4" aria-controls="panel-e4" aria-selected="true">초4</button>
 <button type="button" role="tab" class="tab tab-grade" id="tab-e5" aria-controls="panel-e5" aria-selected="false" tabindex="-1">초5</button>
 <button type="button" role="tab" class="tab tab-grade" id="tab-e6" aria-controls="panel-e6" aria-selected="false" tabindex="-1">초6</button>
@@ -122,7 +128,12 @@
 </div>
 </div>
 
-<noscript><p style="margin: 0; font-size: 16px;">보충 강의를 보려면 브라우저의 자바스크립트를 켜 주세요.</p></noscript>
+<div role="tabpanel" id="spanel-class" aria-labelledby="stab-class" hidden>
+<div id="class-box" class="class-box"></div>
+</div>
+</div>
+
+<noscript><p style="margin: 0; font-size: 16px;">학생 전용 메뉴를 보려면 브라우저의 자바스크립트를 켜 주세요.</p></noscript>
 </div>
 </section>
 </main>
@@ -153,7 +164,7 @@
 <a href="about.html" style="padding: 6px 0;">학원 소개</a>
 <a href="programs.html" style="padding: 6px 0;">교육과정</a>
 <a href="notices.html" style="padding: 6px 0;">공지사항</a>
-<a href="videos.html" style="padding: 6px 0;">보충 강의</a>
+<a href="videos.html" style="padding: 6px 0;">학생 전용</a>
 <a href="contact.html" style="padding: 6px 0;">입학 상담</a>
 </nav>
 </div>
@@ -170,7 +181,7 @@
 // 인터넷 문제 등으로 로그인 기능을 불러오지 못했을 때 안내
 setTimeout(function () {
   var s = document.getElementById('v-status');
-  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '보충 강의를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '학생 전용 메뉴를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
 }, 10000);
 </script>
 <script type="module" src="session.js"></script>

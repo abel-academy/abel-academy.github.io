@@ -188,12 +188,73 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ── 클래스 · 숙제 · 스탬프 ─────────────────────────────
+    // 학생이 들어간 클래스는 학생 정보(students/{uid})의 classIds 에 관리자만 기록
+    // 학생은 자기가 들어간 클래스와 그 숙제, 자기 스탬프만 볼 수 있음
+    function inClass(classId) {
+      return isStudent() && ('classIds' in me()) && me().classIds is list && classId in me().classIds;
+    }
+    function validDate(d) {
+      return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+    match /classes/{classId} {
+      allow read: if isAdmin() || inClass(classId);
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['name', 'subject', 'memo', 'stampMax', 'createdAt'])
+        && (!('stampMax' in request.resource.data) || (request.resource.data.stampMax is int && request.resource.data.stampMax >= 1 && request.resource.data.stampMax <= 100))
+        && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+        && request.resource.data.subject in ['국어', '영어', '수학', '기타']
+        && request.resource.data.memo is string && request.resource.data.memo.size() <= 200;
+      allow delete: if isAdmin();
+
+      match /homework/{hwId} {
+        allow read: if isAdmin() || inClass(classId);
+        allow create: if isAdmin()
+          && request.resource.data.keys().hasOnly(['title', 'body', 'due', 'date', 'createdAt'])
+          && request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100
+          && request.resource.data.body is string && request.resource.data.body.size() <= 3000
+          && (request.resource.data.due == '' || validDate(request.resource.data.due))
+          && validDate(request.resource.data.date)
+          && request.resource.data.createdAt == request.time;
+        allow delete: if isAdmin();
+        allow update: if false;
+      }
+
+      match /stamps/{stampId} {
+        allow read: if isAdmin() || (inClass(classId) && resource.data.studentId == request.auth.uid);
+        allow create: if isAdmin()
+          && request.resource.data.keys().hasOnly(['studentId', 'reason', 'by', 'createdAt'])
+          && request.resource.data.studentId is string
+          && request.resource.data.reason is string && request.resource.data.reason.size() <= 40
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+        allow delete: if isAdmin();
+        allow update: if false;
+      }
+    }
+
+    // ── 특강 구분: 입학 상담 페이지에서 누구나 읽고, 관리자만 추가·삭제 ──
+    match /settings/specials {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['items', 'updatedAt'])
+        && request.resource.data.items is list
+        && request.resource.data.items.size() <= 20
+        && request.resource.data.updatedAt == request.time;
+    }
+
     // ── 상담·특강 신청서 ──────────────────────────────────
     // 누구나 신청할 때 1건 추가, 관리자만 열람·상태 변경·삭제
     match /applications/{id} {
       allow read, delete: if isAdmin();
-      allow create: if request.resource.data.keys().hasOnly(['type', 'studentName', 'grade', 'phone', 'subjects', 'preferredTime', 'message', 'month', 'status', 'createdAt'])
+      allow create: if request.resource.data.keys().hasOnly(['type', 'special', 'studentName', 'grade', 'phone', 'subjects', 'preferredTime', 'message', 'month', 'status', 'createdAt'])
         && request.resource.data.type in ['입학 상담', '특강 신청']
+        // 특강 신청은 특강 구분이 꼭 있어야 함 (입학 상담은 빈칸)
+        && ((request.resource.data.type == '입학 상담'
+              && (!('special' in request.resource.data) || request.resource.data.special == ''))
+            || (request.resource.data.type == '특강 신청'
+              && request.resource.data.special is string
+              && request.resource.data.special.size() >= 1 && request.resource.data.special.size() <= 40))
         && validName(request.resource.data.studentName)
         && request.resource.data.grade in ['초등학교 4학년', '초등학교 5학년', '초등학교 6학년', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년']
         && request.resource.data.phone is string

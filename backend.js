@@ -4,14 +4,14 @@ import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/13.
 import {
   getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged,
   signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword,
-  EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch
+  collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch, arrayUnion, arrayRemove
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import { firebaseConfig, STUDENT_EMAIL_DOMAIN } from './firebase-config.js';
-import { UNDER14_GRADES } from './common.js';
+import { UNDER14_GRADES, DEFAULT_SPECIALS } from './common.js';
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 export const FOUNDER_SLOTS = 2; // 승인 없이 바로 관리자가 될 수 있는 인원 (처음 2명)
@@ -89,6 +89,22 @@ export async function changeMyPassword(currentPassword, newPassword) {
   if (!user) throw Object.assign(new Error('로그인 필요'), { code: 'auth/no-current-user' });
   await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
   await updatePassword(user, newPassword);
+}
+
+// 관리자 비밀번호 재설정 메일: 메일의 링크에서 새 비밀번호를 정함 (학생 아이디는 실제 메일 주소가 아니라서 관리자만 사용)
+// 메일을 다 바꾼 뒤 '계속'을 누르면 관리자 화면으로 돌아오도록 주소를 함께 보냄.
+// 이 홈페이지 주소가 Firebase '승인된 도메인'에 없으면 돌아오는 주소 없이 다시 보냄
+export async function sendAdminPasswordReset(email) {
+  need();
+  auth.languageCode = 'ko';
+  const mail = normalizeLoginId(email);
+  const back = new URL('admin.html', location.href).href;
+  try {
+    await sendPasswordResetEmail(auth, mail, { url: back });
+  } catch (e) {
+    if (!/continue-uri|unauthorized-domain|invalid-url/.test(String(e.code || ''))) throw e;
+    await sendPasswordResetEmail(auth, mail);
+  }
 }
 
 /* ── 역할 확인 ─────────────────────────────────── */
@@ -316,12 +332,27 @@ export async function deleteNotice(id) {
   await batch.commit();
 }
 
+/* ── 특강 구분 (관리자가 추가·삭제) ─────────────────────── */
+// settings/specials 문서 하나에 목록으로 저장. 누구나 읽고, 관리자만 바꿈
+export async function getSpecials() {
+  need();
+  const snap = await getDoc(doc(db, 'settings', 'specials'));
+  return snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [...DEFAULT_SPECIALS];
+}
+
+export async function saveSpecials(items) {
+  need();
+  await setDoc(doc(db, 'settings', 'specials'), { items, updatedAt: serverTimestamp() });
+}
+
 /* ── 상담·특강 신청서 ───────────────────────────── */
 // 누구나 신청서를 1건 저장할 수 있고, 관리자만 열람·상태 변경·삭제
+// 특강 신청은 특강 구분(special)이 꼭 있어야 하고, 입학 상담은 빈칸
 export async function addApplication(a) {
   need();
   const ref = await addDoc(collection(db, 'applications'), {
-    type: a.type, studentName: a.studentName, grade: a.grade, phone: a.phone,
+    type: a.type, special: a.type === '특강 신청' ? (a.special || '') : '',
+    studentName: a.studentName, grade: a.grade, phone: a.phone,
     subjects: a.subjects, preferredTime: a.preferredTime, message: a.message || '',
     month: a.month, status: 'new', createdAt: serverTimestamp()
   });
@@ -341,4 +372,125 @@ export async function setApplicationStatus(id, status) {
 export async function deleteApplication(id) {
   need();
   await deleteDoc(doc(db, 'applications', id));
+}
+
+/* ── 클래스 · 숙제 · 스탬프 ─────────────────────────── */
+// 학생이 들어간 클래스는 학생 정보(students/{uid})의 classIds 에 관리자만 기록 (한 학생이 여러 클래스 가능)
+// 숙제는 classes/{id}/homework, 스탬프는 classes/{id}/stamps 에 한 건씩 저장
+
+// 여러 건을 나눠서 저장 (한 번에 10건씩)
+async function commitInChunks(ops, size = 10) {
+  for (let i = 0; i < ops.length; i += size) {
+    const batch = writeBatch(db);
+    ops.slice(i, i + size).forEach((op) => op(batch));
+    await batch.commit();
+  }
+}
+
+export async function listClasses() {
+  need();
+  return rows(await getDocs(collection(db, 'classes')));
+}
+
+export async function addClass(c) {
+  need();
+  const ref = await addDoc(collection(db, 'classes'), {
+    name: c.name, subject: c.subject, memo: c.memo || '', stampMax: c.stampMax, createdAt: serverTimestamp()
+  });
+  return ref.id;
+}
+
+export async function updateClass(id, c) {
+  need();
+  await updateDoc(doc(db, 'classes', id), { name: c.name, subject: c.subject, memo: c.memo || '', stampMax: c.stampMax });
+}
+
+// 클래스 삭제: 숙제·스탬프 기록을 지우고, 학생들의 클래스 목록에서도 뺀 뒤 클래스를 지움
+export async function deleteClass(id, memberUids = []) {
+  need();
+  const [hw, st] = await Promise.all([
+    getDocs(collection(db, 'classes', id, 'homework')),
+    getDocs(collection(db, 'classes', id, 'stamps'))
+  ]);
+  await commitInChunks([
+    ...memberUids.map((uid) => (b) => b.update(doc(db, 'students', uid), { classIds: arrayRemove(id) })),
+    ...hw.docs.map((d) => (b) => b.delete(d.ref)),
+    ...st.docs.map((d) => (b) => b.delete(d.ref))
+  ]);
+  await deleteDoc(doc(db, 'classes', id));
+}
+
+export async function assignStudents(classId, uids) {
+  need();
+  await commitInChunks(uids.map((uid) => (b) => b.update(doc(db, 'students', uid), { classIds: arrayUnion(classId) })));
+}
+
+export async function unassignStudent(classId, uid) {
+  need();
+  await updateDoc(doc(db, 'students', uid), { classIds: arrayRemove(classId) });
+}
+
+export async function listHomework(classId) {
+  need();
+  const list = rows(await getDocs(collection(db, 'classes', classId, 'homework')));
+  return list.sort((a, b) => String(b.date).localeCompare(String(a.date)) || (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+export async function addHomework(classId, h) {
+  need();
+  const ref = await addDoc(collection(db, 'classes', classId, 'homework'), {
+    title: h.title, body: h.body || '', due: h.due || '', date: h.date, createdAt: serverTimestamp()
+  });
+  return ref.id;
+}
+
+export async function deleteHomework(classId, id) {
+  need();
+  await deleteDoc(doc(db, 'classes', classId, 'homework', id));
+}
+
+// 관리자: 클래스의 스탬프 전체
+export async function listStamps(classId) {
+  need();
+  return rows(await getDocs(collection(db, 'classes', classId, 'stamps')));
+}
+
+// 관리자: 여러 학생에게 스탬프 1개씩
+export async function addStamps(classId, uids, reason) {
+  need();
+  const by = auth.currentUser.uid;
+  await commitInChunks(uids.map((uid) => (b) => b.set(doc(collection(db, 'classes', classId, 'stamps')), {
+    studentId: uid, reason: String(reason || '').slice(0, 40), by, createdAt: serverTimestamp()
+  })));
+}
+
+export async function deleteStamp(classId, id) {
+  need();
+  await deleteDoc(doc(db, 'classes', classId, 'stamps', id));
+}
+
+// 스탬프 초기화: studentId를 주면 그 학생만, 없으면 클래스 전체
+export async function resetStamps(classId, studentId) {
+  need();
+  const col = collection(db, 'classes', classId, 'stamps');
+  const snap = await getDocs(studentId ? query(col, where('studentId', '==', studentId)) : col);
+  await commitInChunks(snap.docs.map((d) => (b) => b.delete(d.ref)));
+  return snap.size;
+}
+
+// 학생: 내가 들어간 클래스 + 숙제 + 내 스탬프
+export async function myClasses(student) {
+  need();
+  const ids = Array.isArray(student.classIds) ? student.classIds : [];
+  const out = await Promise.all(ids.map(async (id) => {
+    const snap = await getDoc(doc(db, 'classes', id)).catch(() => null);
+    if (!snap || !snap.exists()) return null;
+    const [homework, stamps] = await Promise.all([
+      listHomework(id),
+      getDocs(query(collection(db, 'classes', id, 'stamps'), where('studentId', '==', student.uid))).then((s) => rows(s))
+    ]);
+    stamps.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    return { id, ...snap.data(), createdAt: toDate(snap.data().createdAt), homework, stamps };
+  }));
+  return out.filter(Boolean).sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 }

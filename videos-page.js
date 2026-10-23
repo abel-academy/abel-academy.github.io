@@ -1,7 +1,8 @@
-// 보충 강의 페이지: 로그인한(사용 중인) 회원에게만 영상 목록을 보여 줌
+// 학생 전용 페이지: 로그인한(사용 중인) 회원에게만 [보충 강의] [클래스] 두 탭을 보여 줌
 import * as be from './backend.js';
 import { logIn } from './session.js';
 import { SUBJECT_CLASS, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
+import { renderClasses } from './student-classes.js';
 
 const $ = (s) => document.querySelector(s);
 const status = $('#v-status');
@@ -10,6 +11,8 @@ const listBox = $('#v-list');
 const loginForm = $('#login-form');
 const loginErr = $('#lg-error');
 let viewer = null; // 지금 보고 있는 학생 (관리자 미리보기일 때는 null)
+let shown = null;  // 화면에 띄운 학생 정보 { st, adminPreview }
+let classLoaded = false;
 
 function show(which, message) {
   status.hidden = which !== 'status';
@@ -23,8 +26,34 @@ function setLoginError(msg) {
   loginErr.hidden = !msg;
 }
 
+/* ── 큰 탭: 보충 강의 / 클래스 ── */
+const stabs = [...document.querySelectorAll('.stab')];
+function selectSection(name, focus) {
+  stabs.forEach((t) => {
+    const on = t.id === 'stab-' + name;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    if (on && focus) t.focus();
+  });
+  const hash = name === 'class' ? '#class' : '';
+  if (location.hash !== hash) history.replaceState(null, '', location.pathname + location.search + hash);
+  if (name === 'class' && shown && !classLoaded) {
+    classLoaded = true;
+    renderClasses($('#class-box'), shown.st, shown.adminPreview);
+  }
+}
+stabs.forEach((tab, i) => {
+  tab.addEventListener('click', () => selectSection(tab.id.replace('stab-', '')));
+  tab.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    selectSection(stabs[1 - i].id.replace('stab-', ''), true);
+  });
+});
+
 /* ── 학년 탭 ── */
-const tabs = [...document.querySelectorAll('[role="tab"]')];
+const tabs = [...document.querySelectorAll('.tab-grade')];
 function selectTab(tab, focus) {
   tabs.forEach((t) => {
     const on = t === tab;
@@ -92,20 +121,23 @@ function renderPanels(videos) {
 
 async function showStudent(st, adminPreview) {
   viewer = adminPreview ? null : st;
+  shown = { st, adminPreview: Boolean(adminPreview) };
+  classLoaded = false;
   $('#me-name').textContent = st.name;
   $('#me-grade').textContent = adminPreview ? '미리보기' : st.grade;
   $('#me-name').nextSibling.textContent = adminPreview ? ' ' : ' 학생 ';
-  show('status', '보충 강의를 불러오는 중…');
+  show('status', '불러오는 중…');
   const videos = await be.listVideos();
   renderPanels(videos);
   const mine = tabs.find((t) => t.textContent.trim() === st.grade) || tabs[0];
   selectTab(mine, false);
   show('list');
+  selectSection(location.hash === '#class' ? 'class' : 'videos', false);
 }
 
 /* ── 로그인 상태에 따라 화면 전환 ── */
 if (!be.configured) {
-  show('status', '보충 강의 서비스를 준비하고 있어요. 조금만 기다려 주세요.');
+  show('status', '학생 전용 서비스를 준비하고 있어요. 조금만 기다려 주세요.');
   console.info('[아벨학원] firebase-config.js 에 Firebase 설정값을 넣어야 로그인이 작동해요.');
 } else {
   be.onUser(async (user) => {

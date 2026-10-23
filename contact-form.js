@@ -2,7 +2,7 @@
 // 1) Firebase에 신청서를 저장 → 관리자 화면 '상담 신청서'에서 바로 확인
 // 2) Netlify로 배포한 경우에는 Netlify Forms에도 보내 알림 메일을 받음 (GitHub Pages에서는 자동으로 건너뜀)
 import * as be from './backend.js';
-import { APPLY_TYPES, APPLY_GRADES, APPLY_TIMES, monthKey } from './common.js';
+import { APPLY_TYPES, APPLY_GRADES, APPLY_TIMES, DEFAULT_SPECIALS, monthKey } from './common.js';
 
 const form = document.getElementById('apply-form');
 
@@ -15,6 +15,37 @@ if (form) {
   if (new URLSearchParams(location.search).get('type') === 'special') {
     const r = form.querySelector('input[name="apply_type"][value="특강 신청"]');
     if (r) r.checked = true;
+  }
+
+  // ── 특강 구분: '특강 신청'을 고르면 나타나고 꼭 골라야 함 ──
+  const spBox = document.getElementById('special-box');
+  const spSel = document.getElementById('f-special');
+  const spNote = document.getElementById('special-note');
+  let specials = null; // 관리자가 정한 특강 목록 (불러오기 전에는 null)
+  const isSpecial = () => (form.querySelector('input[name="apply_type"]:checked') || {}).value === '특강 신청';
+  function fillSpecials(list) {
+    specials = list;
+    const keep = spSel.value;
+    spSel.replaceChildren(new Option(list.length ? '특강을 선택하세요' : '지금 모집 중인 특강이 없어요', ''), ...list.map((x) => new Option(x, x)));
+    if (list.includes(keep)) spSel.value = keep;
+    spNote.hidden = list.length > 0;
+    spNote.textContent = list.length ? '' : "지금은 모집 중인 특강이 없어요. '입학 상담'으로 신청하시거나 전화(010-2078-7098)로 문의해 주세요.";
+    syncSpecial();
+  }
+  function syncSpecial() {
+    const on = isSpecial();
+    spBox.hidden = !on;
+    spSel.disabled = !on || !(specials && specials.length);
+    spSel.required = on;
+  }
+  form.querySelectorAll('input[name="apply_type"]').forEach((r) => r.addEventListener('change', () => {
+    syncSpecial();
+    if (isSpecial() && specials && specials.length) spSel.focus();
+  }));
+  if (be.configured) {
+    be.getSpecials().then(fillSpecials).catch((e) => { console.warn('특강 목록을 불러오지 못했어요', e); fillSpecials([...DEFAULT_SPECIALS]); });
+  } else {
+    fillSpecials([...DEFAULT_SPECIALS]);
   }
 
   const showError = (msg) => { if (errBox) { errBox.textContent = msg; errBox.hidden = !msg; } };
@@ -37,6 +68,14 @@ if (form) {
   let sending = false;
 
   form.addEventListener('submit', async (e) => {
+    if (isSpecial() && !spSel.value) {
+      e.preventDefault();
+      showError(specials && !specials.length
+        ? "지금은 모집 중인 특강이 없어요. '입학 상담'으로 신청하시거나 전화(010-2078-7098)로 문의해 주세요."
+        : '특강 구분을 선택해 주세요.');
+      if (!spSel.disabled) spSel.focus();
+      return;
+    }
     if (!be.configured) return; // Firebase 설정 전: 원래 방식(Netlify Forms)으로 제출
     e.preventDefault();
     if (sending) return;
@@ -53,6 +92,7 @@ if (form) {
     const grade = String(fd.get('grade') || '');
     const application = {
       type: APPLY_TYPES.includes(type) ? type : '입학 상담',
+      special: type === '특강 신청' ? String(fd.get('special') || '').slice(0, 40) : '',
       studentName: String(fd.get('student_name') || '').trim().slice(0, 20),
       grade: APPLY_GRADES.includes(grade) ? grade : '',
       phone: String(fd.get('parent_phone') || '').trim(),

@@ -149,6 +149,59 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
 .doc th,.doc td{padding:12px 14px;border:1px solid #E4E1DB;text-align:left;vertical-align:top}
 .doc th{background:#F7F6F3;font-weight:600;color:#2E2E2E}
 
+/* 학생 전용: 큰 탭 (보충 강의 / 클래스) */
+.stabs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:28px;padding:4px;border-radius:12px;background:#F2F0EB}
+.stab{display:inline-flex;align-items:center;gap:8px;min-height:50px;padding:0 24px;border:0;border-radius:9px;background:transparent;font-family:inherit;font-size:17px;font-weight:600;color:#5C5C5C;cursor:pointer}
+.stab:hover{color:#141414}
+.stab[aria-selected="true"]{background:#FFFFFF;color:#141414;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.stab svg{flex:none}
+
+/* 학생 전용: 클래스 */
+.class-box{margin-top:32px}
+.cls-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.cls-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid #CFCBC3;border-radius:999px;background:#FFFFFF;font-family:inherit;font-size:15px;font-weight:600;color:#3D3D3D;cursor:pointer}
+.cls-chip:hover{border-color:#141414;color:#141414}
+.cls-chip[aria-selected="true"]{background:#141414;border-color:#141414;color:#FFFFFF}
+.cls-chip-n{font-size:13px;font-weight:700;color:#BF4410}
+.cls-chip[aria-selected="true"] .cls-chip-n{color:#FFB400}
+.cls{display:flex;flex-direction:column;gap:24px}
+.cls-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.cls-top .subj{align-self:center}
+.cls-top h2{margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em}
+.cls-memo{flex-basis:100%;margin:0;font-size:15px;color:#5C5C5C}
+.cls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;align-items:start}
+.cls-card{display:flex;flex-direction:column;gap:18px;padding:28px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
+.cls-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.cls-card h3{margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em}
+.cls-card h4{margin:0 0 8px;font-size:15px;font-weight:700;color:#3D3D3D}
+.cls-sub{font-size:14px;color:#5C5C5C}
+.cls-empty{margin:0;padding:20px;border-radius:10px;background:#F7F6F3;font-size:15px;line-height:1.7;color:#3D3D3D}
+.stamp-count{margin:0;font-size:16px;font-weight:600}
+.stamp-count strong{font-size:34px;font-weight:700;letter-spacing:-0.02em;margin-right:2px}
+.stamp-board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px}
+.stamp{display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:50%}
+.stamp svg{width:58%;height:58%}
+.stamp-o{background:#FF5A1F;color:#FFFFFF}.stamp-y{background:#FFB400;color:#141414}.stamp-b{background:#2563EB;color:#FFFFFF}
+.stamp.empty{border:2px dashed #DAD6CE;background:#FAFAF8}
+.stamp-more{grid-column:1 / -1;font-size:14px;font-weight:700;color:#5C5C5C}
+.stamp-log{list-style:none;margin:0;padding:0}
+.stamp-log li{display:flex;gap:14px;padding:9px 0;border-top:1px solid #ECE9E3;font-size:15px}
+.stamp-log li:first-child{border-top:0}
+.stamp-log time{flex:none;min-width:44px;color:#5C5C5C;font-variant-numeric:tabular-nums}
+.hw-list{list-style:none;margin:0;padding:0}
+.hw-list>li{border-top:1px solid #ECE9E3}
+.hw-list>li:first-child{border-top:0}
+.hw-list summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px 0;cursor:pointer}
+.hw-list summary::-webkit-details-marker{display:none}
+.hw-list summary:hover .hw-title{text-decoration:underline}
+.hw-main{flex:1 1 auto;display:flex;flex-direction:column;gap:2px;min-width:0}
+.hw-title{font-size:17px;font-weight:600;color:#141414;overflow-wrap:anywhere}
+.hw-list details[open] .hw-title{font-weight:700}
+.hw-meta{font-size:14px;color:#5C5C5C}
+.hw-body{margin:0;padding:0 0 18px;font-size:16px;line-height:1.8;color:#3D3D3D;white-space:pre-line;overflow-wrap:anywhere}
+.due{flex:none;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.due-today{background:#FF5A1F;color:#141414}.due-soon{background:#FFE8DC;color:#8A2E0C}.due-later{background:#E8F0FE;color:#1D4ED8}.due-past{background:#F2F0EB;color:#5C5C5C}
+
 /* 휴대폰 화면 */
 @media (max-width:640px){
   .hdr-cta{display:none!important}
@@ -162,4 +215,17 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
   .tab{padding:0 18px}
   .tab-grade{padding:0 12px;font-size:16px}
   .tab-gap{margin-left:8px}
+  .stabs{display:flex}
+  .stab{flex:1 1 0;justify-content:center;padding:0 12px;font-size:16px}
+  .cls-card{padding:20px}
+  .stamp-board{gap:5px}
 }
+
+/* 입학 상담: 특강 구분 */
+.special-box{display:flex;flex-direction:column;gap:8px;margin-top:-12px;padding:18px 20px;border-radius:10px;background:#FFF4E5;border:1px solid #FFD8A8}
+.special-box .field{max-width:420px}
+.special-note{margin:0;font-size:15px;line-height:1.7;color:#8A2E0C}
+.stamp-left{margin:-6px 0 0;font-size:15px;color:#3D3D3D}
+.stamp-done{display:flex;align-items:center;gap:8px;margin:-6px 0 0;padding:12px 14px;border-radius:10px;background:#FFF4E5;border:1px solid #FFD8A8;font-size:16px;font-weight:700;color:#8A2E0C}
+.stamp-done svg{flex:none;color:#FF5A1F}
+.cls-card.stamp-full{border-color:#FFB400;box-shadow:0 0 0 2px rgba(255,180,0,.25)}
