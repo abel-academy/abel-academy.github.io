@@ -22,8 +22,16 @@ export const STAMP_MAX_LIMIT = 100;
 export const STAMP_RULES_MAX = 15;
 export const STAMP_RULE_LEN = 40;
 export const PRIZE_LEN = 100;
-// 모든 클래스의 서브관리자(보기 전용) 기본 계정: 아벨학원 계정
-export const DEFAULT_SUB_EMAIL = 'abelelara7098@gmail.com';
+// 강의실별 시간표
+export const TT_DAYS = ['월', '화', '수', '목', '금', '토', '일'];
+export const TT_SUBJECTS = ['국어', '영어', '수학', '기타'];
+// 처음 강의실 목록 (2·3강의실은 쓰지 않아 뺐어요. 시간표 설정에서 언제든 추가할 수 있어요)
+export const TT_DEFAULT_ROOMS = [{ id: 'r1', name: '1강의실' }, { id: 'r4', name: '4강의실' }, { id: 'r5', name: '5강의실' }, { id: 'r6', name: '6강의실' }, { id: 'r7', name: '7강의실' }];
+// 선생님 색 (시간표 칸 배경). 순서대로 선생님에게 하나씩, 시간표 설정에서 바꿀 수 있어요
+export const TT_COLORS = ['주황', '노랑', '초록', '파랑', '보라', '분홍', '청록', '갈색', '회색', '연두'];
+// 아벨학원 계정: 시간표를 짜고 고치는 계정 + 모든 클래스의 서브관리자(보기 전용) 기본 계정
+export const ACADEMY_EMAIL = 'abelelara7098@gmail.com';
+export const DEFAULT_SUB_EMAIL = ACADEMY_EMAIL;
 export function stampMaxOf(c) {
   const n = Number(c && c.stampMax);
   return Number.isInteger(n) && n >= 1 && n <= STAMP_MAX_LIMIT ? n : STAMP_MAX_DEFAULT;

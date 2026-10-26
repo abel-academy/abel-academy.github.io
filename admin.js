@@ -1,6 +1,7 @@
 // 아벨학원 관리자 화면
 // 대시보드 · 상담 신청서 · 신청 통계 · 학생 관리(학생 목록·접속 통계 / 클래스·숙제·스탬프) · 시청 내역 · 보충 강의 · 공지 · 관리자(가입 승인)
 import * as be from './backend.js';
+import { loadTimetable, classLessons } from './admin-timetable.js';
 import {
   GRADES_ALL, SUBJECTS, SUBJECT_CLASS, APPLY_GRADES, APPLY_TIMES, ID_RE, CLASS_SUBJECTS, SPECIAL_MAX,
   STAMP_MAX_DEFAULT, STAMP_MAX_LIMIT, stampMaxOf, STAMP_RULES_MAX, STAMP_RULE_LEN, PRIZE_LEN, DEFAULT_SUB_EMAIL,
@@ -60,7 +61,7 @@ const loading = (box) => $(box).replaceChildren(el('p', { class: 'empty', text: 
 const ensure = async (key, fn, force) => { if (force || !cache[key]) cache[key] = await fn(); return cache[key]; };
 
 async function loadView(name, force) {
-  const boxes = { home: '#home-kpis', apps: '#ap-table', stats: '#st-body', students: '#stu-table', views: '#vw-by-video', videos: '#vid-list', notices: '#nt-list', admins: '#ad-list' };
+  const boxes = { timetable: '#tt-grid', home: '#home-kpis', apps: '#ap-table', stats: '#st-body', students: '#stu-table', views: '#vw-by-video', videos: '#vid-list', notices: '#nt-list', admins: '#ad-list' };
   try {
     if (name === 'home') {
       loading('#home-apps');
@@ -93,6 +94,16 @@ async function loadView(name, force) {
       loading('#vid-list'); await ensure('videos', be.listVideos, force); renderVideos();
     } else if (name === 'notices') {
       loading('#nt-list'); await ensure('notices', () => be.listNotices(200), force); renderNotices();
+    } else if (name === 'timetable') {
+      // 선생님 ↔ 관리자 계정, 학생 계정, 클래스 연결에 쓰는 목록을 함께 불러옴
+      loading('#tt-grid');
+      await Promise.all([ensure('admins', be.listAdmins, force), ensure('students', be.listStudents, force)]);
+      let classesErr = '';
+      try { await loadClasses(force); } catch (e) { classesErr = friendlyError(e) + ' — Firebase 보안 규칙을 새 내용으로 게시했는지 확인해 주세요.'; }
+      await loadTimetable(force, {
+        me, admins: cache.admins || [], students: cache.students || [], classes: cache.classes || [], classesErr,
+        roleOfClass: roleOf, goToClass, classesChanged: (list) => { cache.classes = list; }
+      });
     } else if (name === 'admins') {
       loading('#ad-list');
       await Promise.all([ensure('admins', be.listAdmins, force), ensure('requests', be.listAdminRequests, force)]);
@@ -1187,6 +1198,14 @@ function openClass(id) {
   $('#cl-back').focus();
 }
 
+// 시간표의 '클래스 열기': 학생 관리 → 클래스에서 그 클래스를 엶
+function goToClass(id) {
+  openView('students');
+  openSub('class');
+  selClass = id; editingClass = false; addPicked.clear(); addQuery = ''; addGrade = ''; stampFlash = ''; hwFlash = '';
+  $('#nav-students').focus();
+}
+
 function backToList(focusId) {
   selClass = null; editingClass = false;
   renderClasses();
@@ -1305,6 +1324,18 @@ function renderClassDetail(focusSel) {
   const own = role === 'owner';
   box.replaceChildren(classHeadCard(c, data, own), rulesCard(c, own), membersCard(c, data, own), homeworkAdminCard(c, data, own), stampLogCard(c, data, own));
   if (focusSel) { const t = box.querySelector(focusSel); if (t && !t.disabled) t.focus(); }
+  fillLessons(c.id);
+}
+
+// 이 클래스와 연결된 시간표 수업 (시간표 탭에서 수업을 눌러 연결)
+async function fillLessons(cid) {
+  const p = $('#cl-lessons');
+  if (!p) return;
+  let list = [];
+  try { list = await classLessons(cid); } catch { return; }
+  if (selClass !== cid || !p.isConnected) return;
+  p.textContent = list.length ? `시간표 수업: ${list.join(' · ')}` : '시간표 수업과 아직 연결되지 않았어요. 시간표 탭에서 수업을 누르고 이 클래스를 연결할 수 있어요.';
+  p.hidden = false;
 }
 
 function classHeadCard(c, data, own) {
@@ -1373,6 +1404,7 @@ function classHeadCard(c, data, own) {
       el('div', { class: 'cls-head-main' }, subjBadge(c.subject), el('h2', { text: c.name })),
       actions),
     el('p', { class: 'view-note', style: 'margin-top: 8px;', text: `대표관리자 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'}` + (c.memo ? ` · ${c.memo}` : '') }),
+    el('p', { class: 'view-note cls-lessons', id: 'cl-lessons', hidden: true }),
     el('div', { class: 'kpis', style: 'margin-top: 18px;' },
       kpi('학생', members.length, '명'),
       kpi('스탬프판', stampMaxOf(c), '칸', '학생 한 명이 모을 수 있는 최대 개수'),

@@ -511,3 +511,68 @@ export async function myClasses(student) {
   }));
   return out.filter(Boolean).sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 }
+
+/* ── 강의실별 시간표 (관리자만 봄) ──────────────────── */
+// timetable/meta: 제목·메모·강의실·선생님 목록, teacherAdmins(선생님 id → 관리자 uid)
+// timetableSlots: 수업 한 칸씩. 시간표 짜기는 아벨학원 계정만, 수업 정보는 담당 선생님도 고칠 수 있음 (보안 규칙)
+export async function getTimetableMeta() {
+  need();
+  const snap = await getDoc(doc(db, 'timetable', 'meta'));
+  if (!snap.exists()) return { exists: false };
+  const d = snap.data();
+  return { exists: true, title: d.title || '', note: d.note || '', rooms: d.rooms || [], teachers: d.teachers || [], teacherAdmins: d.teacherAdmins || {}, updatedAt: toDate(d.updatedAt), updatedBy: d.updatedBy || '' };
+}
+
+export async function saveTimetableMeta(m) {
+  need();
+  await setDoc(doc(db, 'timetable', 'meta'), {
+    title: m.title, note: m.note, rooms: m.rooms, teachers: m.teachers, teacherAdmins: m.teacherAdmins || {},
+    updatedAt: serverTimestamp(), updatedBy: auth.currentUser.uid
+  });
+}
+
+export async function listTimetableSlots() {
+  need();
+  return rows(await getDocs(collection(db, 'timetableSlots')), ['updatedAt']);
+}
+
+const slotData = (s) => ({
+  day: s.day, room: s.room, start: s.start, end: s.end, grade: s.grade || '', subject: s.subject,
+  teacher: s.teacher || '', students: s.students || '', studentLinks: s.studentLinks || {}, classId: s.classId || '',
+  memo: s.memo || '', updatedAt: serverTimestamp(), updatedBy: auth.currentUser.uid
+});
+
+export async function addTimetableSlots(list) {
+  need();
+  const ids = [];
+  await commitInChunks(list.map((s) => (b) => { const ref = doc(collection(db, 'timetableSlots')); ids.push(ref.id); b.set(ref, slotData(s)); }));
+  return ids;
+}
+
+export async function updateTimetableSlot(id, s) {
+  need();
+  await setDoc(doc(db, 'timetableSlots', id), slotData(s));
+}
+
+// 일부만 고치기: 옮기기(요일·강의실·시간)는 아벨학원 계정, 수업 정보(학년·학생·연결·메모)는 담당 선생님도
+const SLOT_PATCH_KEYS = ['day', 'room', 'start', 'end', 'grade', 'subject', 'teacher', 'students', 'studentLinks', 'classId', 'memo'];
+export async function patchTimetableSlot(id, fields) {
+  need();
+  const v = {};
+  for (const k of SLOT_PATCH_KEYS) if (k in fields) v[k] = fields[k];
+  await updateDoc(doc(db, 'timetableSlots', id), { ...v, updatedAt: serverTimestamp(), updatedBy: auth.currentUser.uid });
+}
+
+export async function deleteTimetableSlot(id) {
+  need();
+  await deleteDoc(doc(db, 'timetableSlots', id));
+}
+
+// 초안 불러오기: 지금 수업을 모두 지우고 새 시간표로 바꿈
+export async function replaceTimetable(meta, slots) {
+  need();
+  const old = await getDocs(collection(db, 'timetableSlots'));
+  await commitInChunks(old.docs.map((d) => (b) => b.delete(d.ref)));
+  await saveTimetableMeta(meta);
+  return addTimetableSlots(slots);
+}
