@@ -378,8 +378,8 @@ export async function deleteApplication(id) {
 // 학생이 들어간 클래스는 학생 정보(students/{uid})의 classIds 에 관리자만 기록 (한 학생이 여러 클래스 가능)
 // 숙제는 classes/{id}/homework, 스탬프는 classes/{id}/stamps 에 한 건씩 저장
 
-// 여러 건을 나눠서 저장 (한 번에 10건씩)
-async function commitInChunks(ops, size = 10) {
+// 여러 건을 나눠서 저장 (보안 규칙이 건마다 문서를 확인하므로 한 번에 5건씩)
+async function commitInChunks(ops, size = 5) {
   for (let i = 0; i < ops.length; i += size) {
     const batch = writeBatch(db);
     ops.slice(i, i + size).forEach((op) => op(batch));
@@ -392,17 +392,34 @@ export async function listClasses() {
   return rows(await getDocs(collection(db, 'classes')));
 }
 
+// 클래스마다 대표관리자(ownerId) 1명: 그 관리자만 숙제·스탬프·학생을 관리. 만든 사람이 아니어도 됨
 export async function addClass(c) {
   need();
   const ref = await addDoc(collection(db, 'classes'), {
-    name: c.name, subject: c.subject, memo: c.memo || '', stampMax: c.stampMax, createdAt: serverTimestamp()
+    name: c.name, subject: c.subject, memo: c.memo || '', stampMax: c.stampMax,
+    ownerId: c.ownerId, createdBy: auth.currentUser.uid, stampRules: [], prize: '', createdAt: serverTimestamp()
   });
   return ref.id;
 }
 
-export async function updateClass(id, c) {
+const CLASS_FIELDS = ['name', 'subject', 'memo', 'stampMax', 'ownerId', 'stampRules', 'prize'];
+export async function updateClass(id, fields) {
   need();
-  await updateDoc(doc(db, 'classes', id), { name: c.name, subject: c.subject, memo: c.memo || '', stampMax: c.stampMax });
+  const v = {};
+  CLASS_FIELDS.forEach((k) => { if (k in fields) v[k] = fields[k]; });
+  await updateDoc(doc(db, 'classes', id), v);
+}
+
+// 서브관리자: 모든 클래스의 숙제·스탬프 현황과 기록을 볼 수만 있는 관리자 (settings/classStaff)
+export async function getClassStaff() {
+  need();
+  const snap = await getDoc(doc(db, 'settings', 'classStaff'));
+  return snap.exists() ? { exists: true, subIds: Array.isArray(snap.data().subIds) ? snap.data().subIds : [] } : { exists: false, subIds: [] };
+}
+
+export async function saveClassStaff(subIds) {
+  need();
+  await setDoc(doc(db, 'settings', 'classStaff'), { subIds, updatedAt: serverTimestamp() });
 }
 
 // 클래스 삭제: 숙제·스탬프 기록을 지우고, 학생들의 클래스 목록에서도 뺀 뒤 클래스를 지움

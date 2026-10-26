@@ -3,12 +3,12 @@
 import * as be from './backend.js';
 import {
   GRADES_ALL, SUBJECTS, SUBJECT_CLASS, APPLY_GRADES, APPLY_TIMES, ID_RE, CLASS_SUBJECTS, SPECIAL_MAX,
-  STAMP_MAX_DEFAULT, STAMP_MAX_LIMIT, stampMaxOf,
+  STAMP_MAX_DEFAULT, STAMP_MAX_LIMIT, stampMaxOf, STAMP_RULES_MAX, STAMP_RULE_LEN, PRIZE_LEN, DEFAULT_SUB_EMAIL,
   youtubeId, thumbUrl, formatDate, formatDateTime, todayString, monthKey, dueInfo, el, friendlyError
 } from './common.js';
 
 const $ = (s) => document.querySelector(s);
-const cache = { apps: null, students: null, logins: null, videos: null, views: null, notices: null, admins: null, requests: null, classes: null, specials: null };
+const cache = { apps: null, students: null, logins: null, videos: null, views: null, notices: null, admins: null, requests: null, classes: null, specials: null, staff: null };
 let currentView = 'home';
 let me = { uid: null, email: '', name: '' };
 
@@ -33,6 +33,7 @@ function message(node, text, kind) {
 const navTabs = [...document.querySelectorAll('.adm-nav [role="tab"]')];
 function openView(name, focus) {
   currentView = name;
+  if (name === 'students') { selClass = null; editingClass = false; }
   navTabs.forEach((t) => {
     const on = t.id === 'nav-' + name;
     t.setAttribute('aria-selected', String(on));
@@ -81,10 +82,10 @@ async function loadView(name, force) {
       await Promise.all([ensure('students', be.listStudents, force), ensure('logins', () => be.listLogins(1000), force)]);
       renderStudents();
       // 클래스는 따로 불러옴 (보안 규칙을 아직 새로 게시하지 않았어도 학생 목록은 보이도록)
-      try { await ensure('classes', be.listClasses, force); renderClasses(); }
+      try { await loadClasses(force); renderClasses(); }
       catch (e) {
+        $('#cl-list-view').hidden = false; $('#cl-detail-view').hidden = true;
         $('#cl-list').replaceChildren(el('p', { class: 'a-msg err', text: friendlyError(e) + ' — Firebase 보안 규칙을 새 내용으로 게시했는지 확인해 주세요.' }));
-        $('#cl-detail').replaceChildren();
       }
     } else if (name === 'views') {
       loading('#vw-by-video'); await ensure('views', () => be.listViews(1000), force); renderViews();
@@ -1086,14 +1087,15 @@ subTabs.forEach((t, i) => {
   });
 });
 
-let selClass = null;            // 고른 클래스 id
+let selClass = null;            // 열어 본 클래스 id (null이면 클래스 목록)
 const classData = {};           // 클래스 id → { homework, stamps }
 let stampReason = '';           // 스탬프 이유 (다시 그려도 유지)
-let stampFlash = '', hwFlash = '';
+let stampFlash = '', hwFlash = '', rulesFlash = '';
 let editingClass = false;
 let addQuery = '', addGrade = '';
 const addPicked = new Set();
 let stampLogOpen = false;
+let staffEditing = false;
 
 // 스탬프 최대 개수 입력값 확인 (1~100 정수)
 function readMax(input) {
@@ -1106,6 +1108,41 @@ const membersOf = (cid) => (cache.students || []).filter((s) => Array.isArray(s.
 const studentName = (uid) => { const s = (cache.students || []).find((x) => x.uid === uid); return s ? s.name : '(탈퇴한 학생)'; };
 const byGradeName = (a, b) => GRADES_ALL.indexOf(a.grade) - GRADES_ALL.indexOf(b.grade) || String(a.name || '').localeCompare(String(b.name || ''), 'ko');
 const newest = (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
+const adminName = (uid) => { const a = (cache.admins || []).find((x) => x.uid === uid); return a ? (a.name || a.email) : '(해제된 관리자)'; };
+const subIds = () => (cache.staff && cache.staff.subIds) || [];
+
+// 이 클래스에서 내 역할: owner(대표관리자) · sub(서브관리자, 보기 전용) · none(열람 불가)
+function roleOf(c) {
+  if (!c.ownerId || c.ownerId === me.uid) return 'owner';
+  if (subIds().includes(me.uid)) return 'sub';
+  return 'none';
+}
+
+// 처음 한 번: 서브관리자 목록이 아직 없으면 아벨학원 계정을 모든 클래스의 서브관리자로 저장
+async function initStaff() {
+  if (!cache.staff || cache.staff.exists) return;
+  const def = (cache.admins || []).find((a) => String(a.email || '').toLowerCase() === DEFAULT_SUB_EMAIL);
+  if (!def) return;
+  await be.saveClassStaff([def.uid]);
+  cache.staff = { exists: true, subIds: [def.uid] };
+}
+
+async function loadClasses(force) {
+  await Promise.all([
+    ensure('classes', be.listClasses, force),
+    ensure('admins', be.listAdmins, force),
+    ensure('staff', be.getClassStaff, force)
+  ]);
+  try { await initStaff(); } catch (e) { console.warn('서브관리자 기본값 저장 실패', e); }
+}
+
+function fillOwnerSelect() {
+  const sel = $('#cl-owner');
+  const keep = sel.value || me.uid;
+  const admins = [...(cache.admins || [])].sort((a, b) => (a.uid === me.uid ? -1 : b.uid === me.uid ? 1 : String(a.name || '').localeCompare(String(b.name || ''), 'ko')));
+  sel.replaceChildren(...admins.map((a) => el('option', { value: a.uid, text: `${a.name || '(이름 없음)'} (${a.email || ''})${a.uid === me.uid ? ' · 나' : ''}` })));
+  if (admins.some((a) => a.uid === keep)) sel.value = keep;
+}
 
 $('#cl-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1113,19 +1150,27 @@ $('#cl-form').addEventListener('submit', async (e) => {
   const name = $('#cl-name').value.trim();
   const subject = $('#cl-subject').value;
   const memo = $('#cl-memo').value.trim();
+  const ownerId = $('#cl-owner').value;
   const stampMax = readMax($('#cl-max'));
   if (!name) return message(msg, '클래스 이름을 입력해 주세요.', 'err');
+  if (!ownerId) return message(msg, '대표관리자를 골라 주세요.', 'err');
   if (!stampMax) return message(msg, `스탬프 최대 개수는 1부터 ${STAMP_MAX_LIMIT}까지의 숫자로 적어 주세요.`, 'err');
   if ((cache.classes || []).some((c) => c.name === name)) return message(msg, '같은 이름의 클래스가 이미 있어요. 다른 이름으로 정해 주세요.', 'err');
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    const id = await be.addClass({ name, subject, memo, stampMax });
-    message(msg, `'${name}' 클래스를 만들었어요. 아래에서 학생을 넣어 주세요.`, 'ok');
-    $('#cl-name').value = ''; $('#cl-memo').value = ''; $('#cl-max').value = String(STAMP_MAX_DEFAULT);
+    const id = await be.addClass({ name, subject, memo, stampMax, ownerId });
+    $('#cl-name').value = ''; $('#cl-memo').value = ''; $('#cl-max').value = String(STAMP_MAX_DEFAULT); $('#cl-owner').value = me.uid;
     cache.classes = await be.listClasses();
-    selClass = id; classData[id] = { homework: [], stamps: [] }; editingClass = false; addPicked.clear();
-    renderClasses();
+    if (ownerId === me.uid) {
+      message(msg, '');
+      classData[id] = { homework: [], stamps: [] };
+      rulesFlash = `'${name}' 클래스를 만들었어요. 학생을 넣고 스탬프 규칙과 상품도 적어 보세요.`;
+      openClass(id);
+    } else {
+      message(msg, `'${name}' 클래스를 만들었어요. 대표관리자 ${adminName(ownerId)}님만 이 클래스를 열어 학생·숙제·스탬프를 관리할 수 있어요.`, 'ok');
+      renderClasses();
+    }
   } catch (err) {
     message(msg, friendlyError(err), 'err');
   } finally {
@@ -1133,28 +1178,109 @@ $('#cl-form').addEventListener('submit', async (e) => {
   }
 });
 
-function renderClasses(focusList) {
+$('#cl-back').addEventListener('click', () => backToList());
+
+function openClass(id) {
+  if (selClass !== id) { editingClass = false; addPicked.clear(); addQuery = ''; addGrade = ''; stampFlash = ''; hwFlash = ''; }
+  selClass = id;
+  renderClasses();
+  $('#cl-back').focus();
+}
+
+function backToList(focusId) {
+  selClass = null; editingClass = false;
+  renderClasses();
+  const t = focusId && document.querySelector(`#cl-list [data-cid="${focusId}"]`);
+  (t || $('#cl-list button') || $('#sub-class-tab')).focus();
+}
+
+function renderClasses() {
+  const c = selClass && (cache.classes || []).find((x) => x.id === selClass);
+  const open = c && roleOf(c) !== 'none';
+  if (selClass && !open) selClass = null;
+  $('#cl-list-view').hidden = Boolean(open);
+  $('#cl-detail-view').hidden = !open;
+  if (open) { renderClassDetail(); return; }
+  renderClassList();
+  renderStaff();
+  fillOwnerSelect();
+}
+
+function renderClassList() {
   const list = [...(cache.classes || [])].sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
+  const mine = list.filter((c) => roleOf(c) === 'owner').length;
+  const sub = list.filter((c) => roleOf(c) === 'sub').length;
   $('#cl-count').textContent = `${list.length}개`;
+  $('#cl-mine').textContent = list.length ? `내가 대표관리자 ${mine}개` + (sub ? ` · 서브관리자로 볼 수 있음 ${sub}개` : '') : '';
+  message($('#cl-list-msg'), '');
   if (!list.length) {
     $('#cl-new').open = true;
-    $('#cl-list').replaceChildren(el('p', { class: 'empty', text: '아직 만든 클래스가 없어요.' }));
-    $('#cl-detail').replaceChildren(el('div', { class: 'card' }, el('p', { class: 'empty', text: "위의 '새 클래스 만들기'에서 클래스를 먼저 만들어 주세요." })));
+    $('#cl-list').replaceChildren(el('p', { class: 'empty', text: "아직 만든 클래스가 없어요. 위의 '새 클래스 만들기'에서 만들어 주세요." }));
     return;
   }
-  if (!list.some((c) => c.id === selClass)) selClass = list[0].id;
-  $('#cl-list').replaceChildren(el('ul', { class: 'cls-items' }, list.map((c) => {
-    const b = el('button', { type: 'button', class: 'cls-item', 'aria-current': c.id === selClass ? 'true' : null },
+  $('#cl-list').replaceChildren(el('ul', { class: 'cls-grid-list' }, list.map((c) => {
+    const role = roleOf(c);
+    const pill = role === 'owner' ? el('span', { class: 'pill on', text: '대표관리자' })
+      : role === 'sub' ? el('span', { class: 'pill off', text: '서브관리자 · 보기 전용' })
+      : el('span', { class: 'pill lock', text: '열람 권한 없음' });
+    const body = [
       el('span', { class: 'cls-item-top' }, subjBadge(c.subject), el('strong', { text: c.name })),
-      el('span', { class: 'cls-item-sub', text: `학생 ${membersOf(c.id).length}명` }));
-    b.addEventListener('click', () => {
-      if (selClass !== c.id) { selClass = c.id; editingClass = false; addPicked.clear(); addQuery = ''; addGrade = ''; stampFlash = ''; hwFlash = ''; }
-      renderClasses(true);
-    });
+      el('span', { class: 'cls-item-sub', text: `대표관리자 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'} · 학생 ${membersOf(c.id).length}명` }),
+      pill
+    ];
+    if (role === 'none') {
+      const b = el('button', { type: 'button', class: 'cls-tile locked', 'data-cid': c.id, 'aria-label': `${c.name}: 대표관리자만 열 수 있어요` },
+        ...body, el('span', { class: 'lock-ico', 'aria-hidden': 'true', text: '🔒' }));
+      b.addEventListener('click', () => message($('#cl-list-msg'), `'${c.name}'은(는) 대표관리자 ${adminName(c.ownerId)}님과 서브관리자만 열 수 있어요.`, 'err'));
+      return el('li', {}, b);
+    }
+    const b = el('button', { type: 'button', class: 'cls-tile', 'data-cid': c.id }, ...body, el('span', { class: 'go', 'aria-hidden': 'true', text: '열기 →' }));
+    b.addEventListener('click', () => openClass(c.id));
     return el('li', {}, b);
   })));
-  if (focusList) { const cur = $('#cl-list [aria-current="true"]'); if (cur) cur.focus(); }
-  renderClassDetail();
+}
+
+function renderStaff() {
+  const box = $('#cl-staff-body');
+  const subs = subIds();
+  const iCanEdit = !cache.staff || !cache.staff.exists || subs.includes(me.uid);
+  const names = subs.length
+    ? el('ul', { class: 'staff-list' }, subs.map((uid) => {
+        const a = (cache.admins || []).find((x) => x.uid === uid);
+        return el('li', {}, el('strong', { text: a ? a.name || '(이름 없음)' : '(해제된 관리자)' }), a ? el('span', { class: 'sub', text: a.email }) : null, uid === me.uid ? el('span', { class: 'pill on', text: '나' }) : null);
+      }))
+    : el('p', { class: 'empty', style: 'padding: 12px 0; text-align: left;', text: cache.staff && cache.staff.exists ? '지정된 서브관리자가 없어요.' : `아벨학원 계정(${DEFAULT_SUB_EMAIL})이 관리자로 가입하면 자동으로 모든 클래스의 서브관리자가 돼요.` });
+  const note = el('p', { class: 'view-note', text: '서브관리자는 모든 클래스의 학생 목록, 스탬프 현황·기록, 숙제, 스탬프 규칙을 볼 수 있지만 스탬프를 주거나 빼는 등 바꾸지는 못해요.' });
+  if (!staffEditing) {
+    const edit = iCanEdit ? el('button', { type: 'button', class: 'a-btn small', id: 'staff-edit', text: '서브관리자 바꾸기' }) : null;
+    if (edit) edit.addEventListener('click', () => { staffEditing = true; renderStaff(); $('#staff-form input').focus(); });
+    box.replaceChildren(...[note, names,
+      edit ? el('div', { style: 'margin-top: 12px;' }, edit) : el('p', { class: 'view-note', style: 'margin-top: 10px;', text: '서브관리자 설정은 지금 서브관리자인 계정에서만 바꿀 수 있어요.' })].filter(Boolean));
+    return;
+  }
+  const checks = (cache.admins || []).map((a) => el('label', { class: 'pick' },
+    el('input', { type: 'checkbox', value: a.uid, checked: subs.includes(a.uid) }),
+    el('strong', { text: a.name || '(이름 없음)' }), el('span', { class: 'sub', text: a.email })));
+  const msg = el('p', { class: 'a-msg', role: 'status', hidden: true });
+  const save = el('button', { type: 'submit', class: 'a-btn primary', text: '저장' });
+  const cancel = el('button', { type: 'button', class: 'a-btn', text: '취소' });
+  cancel.addEventListener('click', () => { staffEditing = false; renderStaff(); $('#staff-edit').focus(); });
+  const form = el('form', { id: 'staff-form', novalidate: true }, el('div', { class: 'pick-list' }, checks), el('div', { class: 'a-row', style: 'margin-top: 12px;' }, save, cancel), msg);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const next = [...form.querySelectorAll('input:checked')].map((x) => x.value);
+    if (next.length > 10) return message(msg, '서브관리자는 10명까지 정할 수 있어요.', 'err');
+    if (subs.includes(me.uid) && !next.includes(me.uid) && !confirm('나를 서브관리자에서 빼면, 내가 대표가 아닌 클래스는 더 이상 볼 수 없고 이 설정도 바꿀 수 없어요. 계속할까요?')) return;
+    save.disabled = true;
+    try {
+      await be.saveClassStaff(next);
+      cache.staff = { exists: true, subIds: next };
+      staffEditing = false;
+      renderClasses();
+      message($('#cl-list-msg'), '서브관리자를 저장했어요.', 'ok');
+    } catch (err) { message(msg, friendlyError(err), 'err'); save.disabled = false; }
+  });
+  box.replaceChildren(note, form);
 }
 
 async function loadClassData(cid) {
@@ -1166,7 +1292,8 @@ async function loadClassData(cid) {
 function renderClassDetail(focusSel) {
   const box = $('#cl-detail');
   const c = (cache.classes || []).find((x) => x.id === selClass);
-  if (!c) { box.replaceChildren(); return; }
+  if (!c) { backToList(); return; }
+  const role = roleOf(c);
   const data = classData[c.id];
   if (!data) {
     box.replaceChildren(el('div', { class: 'card' }, el('p', { class: 'empty', text: '불러오는 중…' })));
@@ -1175,16 +1302,18 @@ function renderClassDetail(focusSel) {
       .catch((e) => box.replaceChildren(el('div', { class: 'card' }, el('p', { class: 'a-msg err', text: friendlyError(e) }))));
     return;
   }
-  box.replaceChildren(classHeadCard(c, data), membersCard(c, data), homeworkAdminCard(c, data), stampLogCard(c, data));
+  const own = role === 'owner';
+  box.replaceChildren(classHeadCard(c, data, own), rulesCard(c, own), membersCard(c, data, own), homeworkAdminCard(c, data, own), stampLogCard(c, data, own));
   if (focusSel) { const t = box.querySelector(focusSel); if (t && !t.disabled) t.focus(); }
 }
 
-function classHeadCard(c, data) {
+function classHeadCard(c, data, own) {
   const members = membersOf(c.id);
   const card = el('div', { class: 'card' });
-  if (editingClass) {
+  if (own && editingClass) {
     const name = el('input', { class: 'a-input', id: 'ce-name', type: 'text', value: c.name, maxlength: '40', required: true });
     const subj = el('select', { class: 'a-input', id: 'ce-subject' }, CLASS_SUBJECTS.map((x) => el('option', { selected: x === c.subject, text: x })));
+    const owner = el('select', { class: 'a-input', id: 'ce-owner' }, (cache.admins || []).map((a) => el('option', { value: a.uid, selected: a.uid === (c.ownerId || me.uid), text: `${a.name || '(이름 없음)'} (${a.email || ''})${a.uid === me.uid ? ' · 나' : ''}` })));
     const memo = el('input', { class: 'a-input', id: 'ce-memo', type: 'text', value: c.memo || '', maxlength: '200' });
     const max = el('input', { class: 'a-input', id: 'ce-max', type: 'number', inputmode: 'numeric', min: '1', max: String(STAMP_MAX_LIMIT), step: '1', value: String(stampMaxOf(c)) });
     const msg = el('p', { class: 'a-msg', role: 'status', hidden: true });
@@ -1194,51 +1323,122 @@ function classHeadCard(c, data) {
     const form = el('form', { class: 'a-form', novalidate: true },
       el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-name', text: '클래스 이름' }), name),
       el('div', { class: 'a-fld' }, el('label', { for: 'ce-subject', text: '과목' }), subj),
+      el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-owner' }, '대표관리자 ', el('span', { class: 'hint', text: '다른 관리자에게 넘길 수 있어요' })), owner),
       el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-memo' }, '메모 ', el('span', { class: 'hint', text: '학생에게도 보여요' })), memo),
       el('div', { class: 'a-fld' }, el('label', { for: 'ce-max' }, '스탬프 최대 개수 ', el('span', { class: 'hint', text: `1~${STAMP_MAX_LIMIT}` })), max),
       el('div', { class: 'a-row' }, save, cancel));
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const v = { name: name.value.trim(), subject: subj.value, memo: memo.value.trim(), stampMax: readMax(max) };
+      const v = { name: name.value.trim(), subject: subj.value, memo: memo.value.trim(), stampMax: readMax(max), ownerId: owner.value };
       if (!v.name) return message(msg, '클래스 이름을 입력해 주세요.', 'err');
       if (!v.stampMax) return message(msg, `스탬프 최대 개수는 1부터 ${STAMP_MAX_LIMIT}까지의 숫자로 적어 주세요.`, 'err');
-      const over = membersOf(c.id).filter((s) => data.stamps.filter((x) => x.studentId === s.uid).length > v.stampMax).length;
-      if (over && !confirm(`스탬프를 이미 ${v.stampMax}개보다 많이 받은 학생이 ${over}명 있어요. 그 학생들의 스탬프는 지워지지 않고, 스탬프판은 '다 채움'으로 보여요. 이대로 바꿀까요?`)) return;
       if ((cache.classes || []).some((x) => x.id !== c.id && x.name === v.name)) return message(msg, '같은 이름의 클래스가 이미 있어요.', 'err');
+      const over = members.filter((s) => data.stamps.filter((x) => x.studentId === s.uid).length > v.stampMax).length;
+      if (over && !confirm(`스탬프를 이미 ${v.stampMax}개보다 많이 받은 학생이 ${over}명 있어요. 그 학생들의 스탬프는 지워지지 않고, 스탬프판은 '다 채움'으로 보여요. 이대로 바꿀까요?`)) return;
+      const handOver = v.ownerId !== me.uid;
+      if (handOver && !confirm(`대표관리자를 ${adminName(v.ownerId)}님으로 바꿀까요?\n바꾸면 나는 이 클래스를 관리할 수 없어요` + (subIds().includes(me.uid) ? ' (서브관리자로 보기만 할 수 있어요).' : '. 다시 열 수도 없어요.'))) return;
       save.disabled = true;
-      try { await be.updateClass(c.id, v); Object.assign(c, v); editingClass = false; renderClasses(); }
-      catch (err) { message(msg, friendlyError(err), 'err'); save.disabled = false; }
+      try {
+        await be.updateClass(c.id, v);
+        Object.assign(c, v); editingClass = false;
+        if (handOver && roleOf(c) === 'none') { backToList(c.id); message($('#cl-list-msg'), `'${c.name}'의 대표관리자를 ${adminName(v.ownerId)}님으로 바꿨어요.`, 'ok'); }
+        else renderClassDetail('#cl-edit');
+      } catch (err) { message(msg, friendlyError(err), 'err'); save.disabled = false; }
     });
     card.append(el('div', { class: 'card-head' }, el('h2', { text: '클래스 정보 고치기' })), form, msg);
     setTimeout(() => name.focus(), 0);
     return card;
   }
-  const edit = el('button', { type: 'button', class: 'a-btn small', id: 'cl-edit', text: '이름·메모 고치기' });
-  edit.addEventListener('click', () => { editingClass = true; renderClassDetail(); });
-  const del = el('button', { type: 'button', class: 'a-btn small danger', text: '클래스 삭제' });
-  del.addEventListener('click', async () => {
-    if (!confirm(`'${c.name}' 클래스를 삭제할까요?\n숙제 공지와 스탬프 기록도 모두 지워지고 되돌릴 수 없어요. (학생 계정은 그대로예요)`)) return;
-    del.disabled = true;
-    try {
-      await be.deleteClass(c.id, members.map((s) => s.uid));
-      members.forEach((s) => { s.classIds = s.classIds.filter((x) => x !== c.id); });
-      cache.classes = cache.classes.filter((x) => x.id !== c.id);
-      delete classData[c.id]; selClass = null;
-      renderClasses(true);
-    } catch (err) { alert(friendlyError(err)); del.disabled = false; }
-  });
+  let actions = el('span', { class: 'pill off', text: '서브관리자 · 보기 전용' });
+  if (own) {
+    const edit = el('button', { type: 'button', class: 'a-btn small', id: 'cl-edit', text: '정보·대표관리자 고치기' });
+    edit.addEventListener('click', () => { editingClass = true; renderClassDetail(); });
+    const del = el('button', { type: 'button', class: 'a-btn small danger', text: '클래스 삭제' });
+    del.addEventListener('click', async () => {
+      if (!confirm(`'${c.name}' 클래스를 삭제할까요?\n숙제 공지와 스탬프 기록도 모두 지워지고 되돌릴 수 없어요. (학생 계정은 그대로예요)`)) return;
+      del.disabled = true;
+      try {
+        await be.deleteClass(c.id, members.map((s) => s.uid));
+        members.forEach((s) => { s.classIds = s.classIds.filter((x) => x !== c.id); });
+        cache.classes = cache.classes.filter((x) => x.id !== c.id);
+        delete classData[c.id];
+        backToList();
+        message($('#cl-list-msg'), `'${c.name}' 클래스를 삭제했어요.`, 'ok');
+      } catch (err) { alert(friendlyError(err)); del.disabled = false; }
+    });
+    actions = el('div', { class: 'a-row' }, el('span', { class: 'pill on', style: 'align-self: center;', text: '대표관리자' }), edit, del);
+  }
   card.append(...[
     el('div', { class: 'cls-head' },
       el('div', { class: 'cls-head-main' }, subjBadge(c.subject), el('h2', { text: c.name })),
-      el('div', { class: 'a-row' }, edit, del)),
-    c.memo ? el('p', { class: 'view-note', style: 'margin-top: 8px;', text: c.memo }) : null,
+      actions),
+    el('p', { class: 'view-note', style: 'margin-top: 8px;', text: `대표관리자 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'}` + (c.memo ? ` · ${c.memo}` : '') }),
     el('div', { class: 'kpis', style: 'margin-top: 18px;' },
       kpi('학생', members.length, '명'),
       kpi('스탬프판', stampMaxOf(c), '칸', '학생 한 명이 모을 수 있는 최대 개수'),
       kpi('스탬프판 다 채운 학생', members.filter((s) => data.stamps.filter((x) => x.studentId === s.uid).length >= stampMaxOf(c)).length, '명'),
       kpi('숙제 공지', data.homework.length, '개'))
-  ].filter(Boolean));
+  ]);
   return card;
+}
+
+// 스탬프 규칙 · 다 모았을 때 상품 (그 반 학생과 관리자 모두에게 보임)
+function rulesCard(c, own) {
+  const rules = Array.isArray(c.stampRules) ? c.stampRules : [];
+  const msg = el('p', { class: 'a-msg', role: 'status', hidden: true });
+  if (rulesFlash) { message(msg, rulesFlash, 'ok'); rulesFlash = ''; }
+  const save = async (fields, okText, focusSel) => {
+    try {
+      await be.updateClass(c.id, fields);
+      Object.assign(c, fields);
+      rulesFlash = okText;
+      renderClassDetail(focusSel);
+    } catch (err) { message(msg, friendlyError(err), 'err'); }
+  };
+  const list = rules.length
+    ? el('ol', { class: 'rule-list' }, rules.map((r, i) => {
+        const li = el('li', {}, el('span', { class: 'rule-text', text: r }));
+        if (own) {
+          const del = el('button', { type: 'button', class: 'a-btn small danger', 'aria-label': `규칙 '${r}' 삭제`, text: '삭제' });
+          del.addEventListener('click', () => { if (confirm(`'${r}' 규칙을 삭제할까요?`)) save({ stampRules: rules.filter((_, j) => j !== i) }, '규칙을 삭제했어요.', '#rule-text'); });
+          li.append(del);
+        }
+        return li;
+      }))
+    : el('p', { class: 'empty', style: 'padding: 14px 0; text-align: left;', text: own ? '아직 스탬프 규칙이 없어요. 어떤 때 스탬프를 주는지 적어 두면 학생들도 볼 수 있어요.' : '아직 스탬프 규칙이 없어요.' });
+  const prizeView = el('div', { class: 'prize-box' }, el('span', { class: 'prize-label', text: `🎁 스탬프 ${stampMaxOf(c)}개를 다 모으면` }), el('strong', { text: c.prize || (own ? '아직 상품을 적지 않았어요' : '상품이 정해지지 않았어요') }));
+  const parts = [
+    el('div', { class: 'card-head' }, el('h2', { text: '스탬프 규칙 · 상품' }), el('span', { class: 'card-sub', text: '이 반 학생들도 학생 전용 → 클래스에서 볼 수 있어요' })),
+    list
+  ];
+  if (own) {
+    const input = el('input', { class: 'a-input', id: 'rule-text', type: 'text', maxlength: String(STAMP_RULE_LEN), placeholder: '예) 숙제를 빠짐없이 해 오면 1개' });
+    const add = el('button', { type: 'submit', class: 'a-btn primary', text: '규칙 추가' });
+    const form = el('form', { class: 'a-row rule-form', novalidate: true }, el('label', { for: 'rule-text', class: 'sr-only', text: '새 스탬프 규칙' }), input, add);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = input.value.trim().replace(/\s+/g, ' ');
+      if (!t) return message(msg, '규칙을 적어 주세요.', 'err');
+      if (rules.includes(t)) return message(msg, '이미 있는 규칙이에요.', 'err');
+      if (rules.length >= STAMP_RULES_MAX) return message(msg, `규칙은 ${STAMP_RULES_MAX}개까지 적을 수 있어요.`, 'err');
+      save({ stampRules: [...rules, t] }, '규칙을 추가했어요.', '#rule-text');
+    });
+    const prize = el('input', { class: 'a-input', id: 'prize-text', type: 'text', maxlength: String(PRIZE_LEN), value: c.prize || '', placeholder: '예) 문화상품권 5천 원 또는 간식 쿠폰' });
+    const pSave = el('button', { type: 'submit', class: 'a-btn primary', text: '상품 저장' });
+    const pForm = el('form', { class: 'a-row rule-form', novalidate: true }, prize, pSave);
+    pForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = prize.value.trim();
+      save({ prize: t }, t ? '상품을 저장했어요.' : '상품을 지웠어요.', '#prize-text');
+    });
+    parts.push(form,
+      el('div', { class: 'a-fld', style: 'margin-top: 18px;' }, el('label', { for: 'prize-text' }, `스탬프 ${stampMaxOf(c)}개를 다 모았을 때 상품 `, el('span', { class: 'hint', text: '선택 · 비우고 저장하면 지워져요' })), pForm));
+  } else {
+    parts.push(prizeView);
+  }
+  if (own && c.prize) parts.push(prizeView);
+  parts.push(msg);
+  return el('div', { class: 'card cls-rules' }, ...parts);
 }
 
 async function giveStamps(c, uids, btn, focusSel, skipped = 0) {
@@ -1254,13 +1454,75 @@ async function giveStamps(c, uids, btn, focusSel, skipped = 0) {
   } catch (err) { alert(friendlyError(err)); btn.disabled = false; }
 }
 
-function membersCard(c, data) {
+function membersCard(c, data, own) {
   const members = membersOf(c.id).sort(byGradeName);
   const count = (uid) => data.stamps.filter((x) => x.studentId === uid).length;
   const max = stampMaxOf(c);
   const room = members.filter((s) => count(s.uid) < max);
-  const reason = el('input', { class: 'a-input', id: 'st-reason', type: 'text', maxlength: '40', placeholder: '예) 숙제 완벽, 발표 최고', value: stampReason });
+  const live = el('p', { class: 'a-msg', role: 'status', hidden: true });
+  if (stampFlash) { message(live, stampFlash, 'ok'); stampFlash = ''; }
+
+  const rowsEl = members.map((s) => {
+    const n = count(s.uid);
+    const full = n >= max;
+    const cells = [
+      el('td', {}, el('strong', { text: s.name }), s.active ? null : el('span', { class: 'pill off', style: 'margin-left: 6px;', text: '사용 중지' })),
+      el('td', { text: s.grade }),
+      el('td', { text: s.loginId }),
+      el('td', { class: 'num' }, el('span', { class: 'stamp-n' + (n ? '' : ' zero') + (full ? ' full' : ''), text: `★ ${n} / ${max}` }), full ? el('span', { class: 'pill full', text: '다 채움' }) : null)
+    ];
+    if (own) {
+      const plus = el('button', { type: 'button', class: 'a-btn small primary', 'data-k': `plus-${s.uid}`, 'aria-label': full ? `${s.name} 스탬프판을 다 채웠어요` : `${s.name} 스탬프 1개 주기`, text: '+1', disabled: full });
+      plus.addEventListener('click', () => giveStamps(c, [s.uid], plus, `[data-k="plus-${s.uid}"]`));
+      const minus = el('button', { type: 'button', class: 'a-btn small', 'data-k': `minus-${s.uid}`, 'aria-label': `${s.name} 스탬프 1개 빼기`, text: '−1', disabled: !n });
+      minus.addEventListener('click', async () => {
+        const last = data.stamps.filter((x) => x.studentId === s.uid).sort(newest)[0];
+        if (!last || !confirm(`${s.name} 학생의 가장 최근 스탬프 1개를 뺄까요?` + (last.reason ? `\n(이유: ${last.reason})` : ''))) return;
+        minus.disabled = true;
+        try {
+          await be.deleteStamp(c.id, last.id);
+          data.stamps = data.stamps.filter((x) => x.id !== last.id);
+          stampFlash = `${s.name} 학생의 스탬프 1개를 뺐어요.`;
+          renderClassDetail(`[data-k="minus-${s.uid}"]`);
+        } catch (err) { alert(friendlyError(err)); minus.disabled = false; }
+      });
+      const reset = el('button', { type: 'button', class: 'a-btn small', 'data-k': `reset-${s.uid}`, 'aria-label': `${s.name} 스탬프 초기화`, text: '초기화', disabled: !n });
+      reset.addEventListener('click', async () => {
+        if (!confirm(`${s.name} 학생의 스탬프 ${n}개를 초기화할까요?\n0개부터 다시 모으고, 받은 기록도 지워져요.`)) return;
+        reset.disabled = true;
+        try {
+          await be.resetStamps(c.id, s.uid);
+          data.stamps = data.stamps.filter((x) => x.studentId !== s.uid);
+          stampFlash = `${s.name} 학생의 스탬프를 초기화했어요.`;
+          renderClassDetail(`[data-k="plus-${s.uid}"]`);
+        } catch (err) { alert(friendlyError(err)); reset.disabled = false; }
+      });
+      const out = el('button', { type: 'button', class: 'a-btn small danger', 'aria-label': `${s.name} 학생을 클래스에서 빼기`, text: '빼기' });
+      out.addEventListener('click', async () => {
+        if (!confirm(`${s.name} 학생을 '${c.name}'에서 뺄까요?\n받은 스탬프 기록은 남아 있어서, 다시 넣으면 그대로 보여요.`)) return;
+        out.disabled = true;
+        try { await be.unassignStudent(c.id, s.uid); s.classIds = s.classIds.filter((x) => x !== c.id); renderClassDetail(); }
+        catch (err) { alert(friendlyError(err)); out.disabled = false; }
+      });
+      cells.push(el('td', {}, el('div', { class: 'a-row' }, plus, minus, reset)), el('td', {}, out));
+    } else {
+      const last = data.stamps.filter((x) => x.studentId === s.uid).sort(newest)[0];
+      cells.push(el('td', { text: last ? formatDateTime(last.createdAt) : '—' }));
+    }
+    return el('tr', { class: s.active ? null : 'off' }, ...cells);
+  });
+
+  const head = el('div', { class: 'card-head' }, el('h2', {}, '학생 · 스탬프 현황 ', el('span', { class: 'card-sub', text: `${members.length}명` })),
+    el('span', { class: 'card-sub', text: own ? `스탬프판 ${max}칸 · 다 채우면 더 줄 수 없어요. 초기화하면 0개부터 다시 모아요` : `스탬프판 ${max}칸 · 서브관리자는 볼 수만 있어요` }));
+  const tableEl = el('div', { style: 'margin-top: 16px;' }, members.length
+    ? table(own ? ['이름', '학년', '아이디', { label: '스탬프', num: true }, '스탬프 주기 · 초기화', ''] : ['이름', '학년', '아이디', { label: '스탬프', num: true }, '마지막으로 받은 때'], rowsEl)
+    : el('p', { class: 'empty', text: own ? '아직 넣은 학생이 없어요. 아래에서 학생을 골라 넣어 주세요.' : '아직 이 클래스에 학생이 없어요.' }));
+  if (!own) return el('div', { class: 'card cls-members' }, head, tableEl);
+
+  const rules = Array.isArray(c.stampRules) ? c.stampRules : [];
+  const reason = el('input', { class: 'a-input', id: 'st-reason', type: 'text', maxlength: '40', placeholder: rules.length ? '규칙에서 고르거나 직접 적어요' : '예) 숙제 완벽, 발표 최고', value: stampReason, list: rules.length ? 'st-reasons' : null });
   reason.addEventListener('input', () => { stampReason = reason.value; });
+  const dl = rules.length ? el('datalist', { id: 'st-reasons' }, rules.map((r) => el('option', { value: r.slice(0, 40) }))) : null;
   const all = el('button', { type: 'button', class: 'a-btn primary', id: 'st-all', text: '모두에게 +1', disabled: !room.length });
   all.addEventListener('click', () => giveStamps(c, room.map((s) => s.uid), all, '#st-all', members.length - room.length));
   const resetAll = el('button', { type: 'button', class: 'a-btn danger', id: 'st-reset-all', text: '전체 초기화', disabled: !data.stamps.length });
@@ -1274,63 +1536,13 @@ function membersCard(c, data) {
       renderClassDetail('#st-all');
     } catch (err) { alert(friendlyError(err)); resetAll.disabled = false; }
   });
-  const live = el('p', { class: 'a-msg', role: 'status', hidden: true });
-  if (stampFlash) { message(live, stampFlash, 'ok'); stampFlash = ''; }
-
-  const rowsEl = members.map((s) => {
-    const n = count(s.uid);
-    const full = n >= max;
-    const plus = el('button', { type: 'button', class: 'a-btn small primary', 'data-k': `plus-${s.uid}`, 'aria-label': full ? `${s.name} 스탬프판을 다 채웠어요` : `${s.name} 스탬프 1개 주기`, text: '+1', disabled: full });
-    plus.addEventListener('click', () => giveStamps(c, [s.uid], plus, `[data-k="plus-${s.uid}"]`));
-    const minus = el('button', { type: 'button', class: 'a-btn small', 'data-k': `minus-${s.uid}`, 'aria-label': `${s.name} 스탬프 1개 빼기`, text: '−1', disabled: !n });
-    minus.addEventListener('click', async () => {
-      const last = data.stamps.filter((x) => x.studentId === s.uid).sort(newest)[0];
-      if (!last || !confirm(`${s.name} 학생의 가장 최근 스탬프 1개를 뺄까요?` + (last.reason ? `\n(이유: ${last.reason})` : ''))) return;
-      minus.disabled = true;
-      try {
-        await be.deleteStamp(c.id, last.id);
-        data.stamps = data.stamps.filter((x) => x.id !== last.id);
-        stampFlash = `${s.name} 학생의 스탬프 1개를 뺐어요.`;
-        renderClassDetail(`[data-k="minus-${s.uid}"]`);
-      } catch (err) { alert(friendlyError(err)); minus.disabled = false; }
-    });
-    const reset = el('button', { type: 'button', class: 'a-btn small', 'data-k': `reset-${s.uid}`, 'aria-label': `${s.name} 스탬프 초기화`, text: '초기화', disabled: !n });
-    reset.addEventListener('click', async () => {
-      if (!confirm(`${s.name} 학생의 스탬프 ${n}개를 초기화할까요?\n0개부터 다시 모으고, 받은 기록도 지워져요.`)) return;
-      reset.disabled = true;
-      try {
-        await be.resetStamps(c.id, s.uid);
-        data.stamps = data.stamps.filter((x) => x.studentId !== s.uid);
-        stampFlash = `${s.name} 학생의 스탬프를 초기화했어요.`;
-        renderClassDetail(`[data-k="plus-${s.uid}"]`);
-      } catch (err) { alert(friendlyError(err)); reset.disabled = false; }
-    });
-    const out = el('button', { type: 'button', class: 'a-btn small danger', 'aria-label': `${s.name} 학생을 클래스에서 빼기`, text: '빼기' });
-    out.addEventListener('click', async () => {
-      if (!confirm(`${s.name} 학생을 '${c.name}'에서 뺄까요?\n받은 스탬프 기록은 남아 있어서, 다시 넣으면 그대로 보여요.`)) return;
-      out.disabled = true;
-      try { await be.unassignStudent(c.id, s.uid); s.classIds = s.classIds.filter((x) => x !== c.id); renderClasses(); }
-      catch (err) { alert(friendlyError(err)); out.disabled = false; }
-    });
-    return el('tr', { class: s.active ? null : 'off' },
-      el('td', {}, el('strong', { text: s.name }), s.active ? null : el('span', { class: 'pill off', style: 'margin-left: 6px;', text: '사용 중지' })),
-      el('td', { text: s.grade }),
-      el('td', { text: s.loginId }),
-      el('td', { class: 'num' }, el('span', { class: 'stamp-n' + (n ? '' : ' zero') + (full ? ' full' : ''), text: `★ ${n} / ${max}` }), full ? el('span', { class: 'pill full', text: '다 채움' }) : null),
-      el('td', {}, el('div', { class: 'a-row' }, plus, minus, reset)),
-      el('td', {}, out));
-  });
-
   return el('div', { class: 'card cls-members' },
-    el('div', { class: 'card-head' }, el('h2', {}, '학생 · 스탬프 ', el('span', { class: 'card-sub', text: `${members.length}명` })),
-      el('span', { class: 'card-sub', text: `스탬프판 ${max}칸 · 다 채우면 더 줄 수 없어요. 초기화하면 0개부터 다시 모아요` })),
+    head,
     el('div', { class: 'stamp-bar' },
-      el('div', { class: 'a-fld' }, el('label', { for: 'st-reason' }, '스탬프 이유 ', el('span', { class: 'hint', text: '선택 · 학생에게 보여요' })), reason),
+      el('div', { class: 'a-fld' }, el('label', { for: 'st-reason' }, '스탬프 이유 ', el('span', { class: 'hint', text: '선택 · 학생에게 보여요' })), reason, dl),
       all, resetAll),
     live,
-    el('div', { style: 'margin-top: 16px;' }, members.length
-      ? table(['이름', '학년', '아이디', { label: '스탬프', num: true }, '스탬프 주기 · 초기화', ''], rowsEl)
-      : el('p', { class: 'empty', text: '아직 넣은 학생이 없어요. 아래에서 학생을 골라 넣어 주세요.' })),
+    tableEl,
     addStudentsBlock(c));
 }
 
@@ -1365,7 +1577,7 @@ function addStudentsBlock(c) {
       uids.forEach((uid) => { const s = cache.students.find((x) => x.uid === uid); if (s) s.classIds = [...(Array.isArray(s.classIds) ? s.classIds : []), c.id]; });
       addPicked.clear();
       stampFlash = `학생 ${uids.length}명을 '${c.name}'에 넣었어요.`;
-      renderClasses();
+      renderClassDetail();
     } catch (err) { alert(friendlyError(err)); addBtn.disabled = false; }
   });
   draw(); syncBtn();
@@ -1377,73 +1589,90 @@ function addStudentsBlock(c) {
     el('div', {}, addBtn));
 }
 
-function homeworkAdminCard(c, data) {
-  const title = el('input', { class: 'a-input', id: 'hw-title', type: 'text', maxlength: '100', required: true, placeholder: '예) 교재 24~27쪽 풀어 오기' });
-  const due = el('input', { class: 'a-input', id: 'hw-due', type: 'date' });
-  const body = el('textarea', { class: 'a-input a-textarea', id: 'hw-body', rows: '3', maxlength: '3000' });
+function homeworkAdminCard(c, data, own) {
   const msg = el('p', { class: 'a-msg', role: 'status', hidden: true });
-  const btn = el('button', { type: 'submit', class: 'a-btn primary', style: 'min-height: 42px;', text: '숙제 올리기' });
-  const form = el('form', { class: 'a-form', novalidate: true },
-    el('div', { class: 'a-fld span-2' }, el('label', { for: 'hw-title', text: '숙제 제목' }), title),
-    el('div', { class: 'a-fld' }, el('label', { for: 'hw-due' }, '마감일 ', el('span', { class: 'hint', text: '선택' })), due),
-    el('div', { class: 'a-fld span-all' }, el('label', { for: 'hw-body' }, '내용 ', el('span', { class: 'hint', text: '선택 · 범위, 준비물 등' })), body),
-    btn);
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const t = title.value.trim();
-    if (!t) return message(msg, '숙제 제목을 입력해 주세요.', 'err');
-    btn.disabled = true;
-    try {
-      await be.addHomework(c.id, { title: t, body: body.value.trim(), due: due.value || '', date: todayString() });
-      data.homework = await be.listHomework(c.id);
-      hwFlash = `'${t}' 숙제를 올렸어요. '${c.name}' 학생들이 학생 전용 → 클래스에서 볼 수 있어요.`;
-      renderClassDetail('#hw-title');
-    } catch (err) { message(msg, friendlyError(err), 'err'); btn.disabled = false; }
-  });
-  if (hwFlash) { message(msg, hwFlash, 'ok'); hwFlash = ''; }
+  let form = null;
+  if (own) {
+    const title = el('input', { class: 'a-input', id: 'hw-title', type: 'text', maxlength: '100', required: true, placeholder: '예) 교재 24~27쪽 풀어 오기' });
+    const due = el('input', { class: 'a-input', id: 'hw-due', type: 'date' });
+    const body = el('textarea', { class: 'a-input a-textarea', id: 'hw-body', rows: '3', maxlength: '3000' });
+    const btn = el('button', { type: 'submit', class: 'a-btn primary', style: 'min-height: 42px;', text: '숙제 올리기' });
+    form = el('form', { class: 'a-form', novalidate: true },
+      el('div', { class: 'a-fld span-2' }, el('label', { for: 'hw-title', text: '숙제 제목' }), title),
+      el('div', { class: 'a-fld' }, el('label', { for: 'hw-due' }, '마감일 ', el('span', { class: 'hint', text: '선택' })), due),
+      el('div', { class: 'a-fld span-all' }, el('label', { for: 'hw-body' }, '내용 ', el('span', { class: 'hint', text: '선택 · 범위, 준비물 등' })), body),
+      btn);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const t = title.value.trim();
+      if (!t) return message(msg, '숙제 제목을 입력해 주세요.', 'err');
+      btn.disabled = true;
+      try {
+        await be.addHomework(c.id, { title: t, body: body.value.trim(), due: due.value || '', date: todayString() });
+        data.homework = await be.listHomework(c.id);
+        hwFlash = `'${t}' 숙제를 올렸어요. '${c.name}' 학생들이 학생 전용 → 클래스에서 볼 수 있어요.`;
+        renderClassDetail('#hw-title');
+      } catch (err) { message(msg, friendlyError(err), 'err'); btn.disabled = false; }
+    });
+    if (hwFlash) { message(msg, hwFlash, 'ok'); hwFlash = ''; }
+  }
+  const head = ['올린 날', '숙제', '마감'];
+  if (own) head.push('');
   const list = data.homework.length
-    ? table(['올린 날', '숙제', '마감', ''], data.homework.map((h) => {
+    ? table(head, data.homework.map((h) => {
         const di = dueInfo(h.due);
-        const del = el('button', { type: 'button', class: 'a-btn small danger', text: '삭제' });
-        del.addEventListener('click', async () => {
-          if (!confirm(`'${h.title}' 숙제 공지를 삭제할까요?`)) return;
-          del.disabled = true;
-          try { await be.deleteHomework(c.id, h.id); data.homework = data.homework.filter((x) => x.id !== h.id); renderClassDetail(); }
-          catch (err) { alert(friendlyError(err)); del.disabled = false; }
-        });
-        return el('tr', {},
+        const cells = [
           el('td', { text: formatDate(h.date) }),
           el('td', {}, el('strong', { text: h.title }), h.body ? el('div', { class: 'hw-prev', text: h.body }) : null),
-          el('td', {}, di ? el('span', { class: 'due-cell' }, di.date, ' ', el('span', { class: 'due due-' + di.kind, text: di.text })) : '—'),
-          el('td', {}, del));
+          el('td', {}, di ? el('span', { class: 'due-cell' }, di.date, ' ', el('span', { class: 'due due-' + di.kind, text: di.text })) : '—')
+        ];
+        if (own) {
+          const del = el('button', { type: 'button', class: 'a-btn small danger', text: '삭제' });
+          del.addEventListener('click', async () => {
+            if (!confirm(`'${h.title}' 숙제 공지를 삭제할까요?`)) return;
+            del.disabled = true;
+            try { await be.deleteHomework(c.id, h.id); data.homework = data.homework.filter((x) => x.id !== h.id); renderClassDetail(); }
+            catch (err) { alert(friendlyError(err)); del.disabled = false; }
+          });
+          cells.push(el('td', {}, del));
+        }
+        return el('tr', {}, ...cells);
       }))
     : el('p', { class: 'empty', text: '올린 숙제가 없어요.' });
-  return el('div', { class: 'card cls-hw' },
+  return el('div', { class: 'card cls-hw' }, ...[
     el('div', { class: 'card-head' }, el('h2', { text: '숙제 공지' }), el('span', { class: 'card-sub', text: '이 클래스 학생에게만 보여요' })),
-    form, msg,
-    el('div', { style: 'margin-top: 18px;' }, list));
+    form, own ? msg : null,
+    el('div', { style: own ? 'margin-top: 18px;' : null }, list)
+  ].filter(Boolean));
 }
 
-function stampLogCard(c, data) {
+function stampLogCard(c, data, own) {
   const list = [...data.stamps].sort(newest);
   const shown = list.slice(0, 50);
-  const d = el('details', { class: 'card fold cls-log', open: stampLogOpen },
+  const head = ['준 날짜', '학생', '이유', '준 관리자'];
+  if (own) head.push('');
+  const d = el('details', { class: 'card fold cls-log', open: stampLogOpen || !own },
     el('summary', {}, '스탬프 기록 ', el('span', { class: 'card-sub', text: `${list.length}개` })),
-    el('div', { style: 'margin-top: 14px;' },
+    el('div', { style: 'margin-top: 14px;' }, ...[
       shown.length
-        ? table(['준 날짜', '학생', '이유', ''], shown.map((s) => {
-            const del = el('button', { type: 'button', class: 'a-btn small danger', text: '취소' });
-            del.addEventListener('click', async () => {
-              if (!confirm(`${studentName(s.studentId)} 학생의 스탬프 1개를 취소할까요?`)) return;
-              del.disabled = true;
-              try { await be.deleteStamp(c.id, s.id); data.stamps = data.stamps.filter((x) => x.id !== s.id); renderClassDetail(); }
-              catch (err) { alert(friendlyError(err)); del.disabled = false; }
-            });
-            return el('tr', {}, el('td', { text: formatDateTime(s.createdAt) }), el('td', { text: studentName(s.studentId) }), el('td', { text: s.reason || '—' }), el('td', {}, del));
+        ? table(head, shown.map((s) => {
+            const cells = [el('td', { text: formatDateTime(s.createdAt) }), el('td', { text: studentName(s.studentId) }), el('td', { text: s.reason || '—' }), el('td', { text: s.by ? adminName(s.by) : '—' })];
+            if (own) {
+              const del = el('button', { type: 'button', class: 'a-btn small danger', text: '취소' });
+              del.addEventListener('click', async () => {
+                if (!confirm(`${studentName(s.studentId)} 학생의 스탬프 1개를 취소할까요?`)) return;
+                del.disabled = true;
+                try { await be.deleteStamp(c.id, s.id); data.stamps = data.stamps.filter((x) => x.id !== s.id); renderClassDetail(); }
+                catch (err) { alert(friendlyError(err)); del.disabled = false; }
+              });
+              cells.push(el('td', {}, del));
+            }
+            return el('tr', {}, ...cells);
           }), { maxHeight: 420 })
         : el('p', { class: 'empty', text: '아직 준 스탬프가 없어요.' }),
-      list.length > 50 ? el('p', { class: 'view-note', style: 'margin-top: 8px;', text: '최근 50개까지 보여요.' }) : null));
-  d.addEventListener('toggle', () => { stampLogOpen = d.open; });
+      list.length > 50 ? el('p', { class: 'view-note', style: 'margin-top: 8px;', text: '최근 50개까지 보여요.' }) : null
+    ].filter(Boolean)));
+  if (own) d.addEventListener('toggle', () => { stampLogOpen = d.open; });
   return d;
 }
 

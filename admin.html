@@ -223,23 +223,36 @@
 
 <!-- 클래스: 만들기 · 학생 배정 · 숙제 공지 · 스탬프 -->
 <div id="sub-class" class="subpanel" role="tabpanel" aria-labelledby="sub-class-tab" hidden>
-<p class="view-note">클래스를 만들고 학생을 넣으면, 학생은 홈페이지 '학생 전용 → 클래스'에서 그 클래스의 숙제 공지와 자기 스탬프를 볼 수 있어요. 다른 학생의 스탬프는 보이지 않아요. 한 학생을 여러 클래스에 넣을 수 있어요.</p>
+
+<!-- 클래스 목록 -->
+<div id="cl-list-view" class="subpanel">
+<p class="view-note">클래스마다 <strong>대표관리자</strong> 1명이 학생·숙제·스탬프를 관리해요. <strong>서브관리자</strong>는 모든 클래스의 스탬프 현황과 기록을 볼 수만 있어요. 내 계정으로 열 수 있는 클래스만 눌러서 들어갈 수 있어요.</p>
 <details class="card fold" id="cl-new">
 <summary>새 클래스 만들기</summary>
 <form id="cl-form" class="a-form" novalidate style="margin-top: 16px;">
 <div class="a-fld span-2"><label for="cl-name">클래스 이름</label><input id="cl-name" class="a-input" type="text" required maxlength="40" placeholder="예) 고1 수학 A반"></div>
 <div class="a-fld"><label for="cl-subject">과목</label><select id="cl-subject" class="a-input"><option>국어</option><option>영어</option><option selected>수학</option><option>기타</option></select></div>
+<div class="a-fld span-2"><label for="cl-owner">대표관리자 <span class="hint">이 관리자만 클래스를 열고 관리해요</span></label><select id="cl-owner" class="a-input"></select></div>
 <div class="a-fld span-2"><label for="cl-memo">메모 <span class="hint">선택 · 학생에게도 보여요</span></label><input id="cl-memo" class="a-input" type="text" maxlength="200" placeholder="예) 월·수·금 오후 5시"></div>
 <div class="a-fld"><label for="cl-max">스탬프 최대 개수 <span class="hint">1~100칸</span></label><input id="cl-max" class="a-input" type="number" inputmode="numeric" min="1" max="100" step="1" value="10" required></div>
 <button type="submit" class="a-btn primary" style="min-height: 42px;">클래스 만들기</button>
 </form>
 <p id="cl-msg" class="a-msg" role="status" hidden></p>
 </details>
-<div class="cls-layout">
-<div class="card cls-side">
-<div class="card-head"><h2>클래스 목록 <span id="cl-count" class="card-sub"></span></h2></div>
+<div class="card">
+<div class="card-head"><h2>클래스 목록 <span id="cl-count" class="card-sub"></span></h2><span class="card-sub" id="cl-mine"></span></div>
+<p id="cl-list-msg" class="a-msg" role="status" hidden></p>
 <div id="cl-list"></div>
 </div>
+<div class="card" id="cl-staff">
+<div class="card-head"><h2>서브관리자 <span class="card-sub">모든 클래스 · 보기 전용</span></h2></div>
+<div id="cl-staff-body"></div>
+</div>
+</div>
+
+<!-- 클래스 열람 (권한이 있는 클래스만) -->
+<div id="cl-detail-view" class="subpanel" hidden>
+<div><button type="button" id="cl-back" class="a-btn small">← 클래스 목록</button></div>
 <div id="cl-detail" class="cls-main"></div>
 </div>
 </div>

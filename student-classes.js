@@ -1,4 +1,4 @@
-// 학생 전용 → 클래스 탭: 내가 들어간 클래스의 숙제 공지와 내 스탬프
+// 학생 전용 → 클래스 탭: 내가 들어간 클래스의 숙제 공지, 내 스탬프, 스탬프 규칙·상품
 // (다른 학생의 스탬프는 보이지 않음)
 import * as be from './backend.js';
 import { SUBJECT_CLASS, formatDate, dueInfo, stampMaxOf, el, friendlyError } from './common.js';
@@ -44,9 +44,10 @@ function stampCard(c) {
       el('h3', { text: '내 스탬프' }),
       el('p', { class: 'stamp-count' }, el('strong', { text: String(Math.min(n, max)) }), ` / ${max}개`)),
     full
-      ? el('p', { class: 'stamp-done', role: 'status' }, star(), el('span', { text: '스탬프판을 다 채웠어요! 선생님께 알려 주세요.' }))
+      ? el('p', { class: 'stamp-done', role: 'status' }, star(), el('span', { text: c.prize ? `스탬프판을 다 채웠어요! 상품: ${c.prize} — 선생님께 알려 주세요.` : '스탬프판을 다 채웠어요! 선생님께 알려 주세요.' }))
       : el('p', { class: 'stamp-left', text: `${max - n}개만 더 모으면 스탬프판을 다 채워요.` }),
     stampBoard(n, max),
+    c.prize && !full ? el('p', { class: 'prize-line' }, el('span', { class: 'prize-tag', text: '🎁 다 모으면' }), ' ', el('strong', { text: c.prize })) : null,
     n
       ? el('div', { class: 'stamp-log-wrap' },
           el('h4', { text: '최근 받은 스탬프' }),
@@ -79,13 +80,27 @@ function homeworkCard(c) {
   );
 }
 
+// 스탬프 규칙: 어떤 때 스탬프를 받는지 (선생님이 적어 둔 규칙, 반 학생 모두에게 보임)
+function rulesCard(c) {
+  const rules = Array.isArray(c.stampRules) ? c.stampRules : [];
+  if (!rules.length && !c.prize) return null;
+  return el('section', { class: 'cls-card cls-rules', 'aria-label': '스탬프 규칙' },
+    el('div', { class: 'cls-card-head' }, el('h3', { text: '스탬프 받는 방법' })),
+    rules.length
+      ? el('ol', { class: 'rule-list' }, rules.map((r) => el('li', { text: r })))
+      : el('p', { class: 'cls-empty', text: '선생님이 수업 시간에 알려 줘요.' }),
+    c.prize ? el('p', { class: 'prize-box' }, el('span', { class: 'prize-tag', text: `🎁 스탬프 ${stampMaxOf(c)}개를 다 모으면` }), el('strong', { text: c.prize })) : null
+  );
+}
+
 function classPanel(c) {
   return el('article', { class: 'cls' },
     el('header', { class: 'cls-top' },
       el('span', { class: 'subj subj-' + (SUBJECT_CLASS[c.subject] || 'etc'), text: c.subject || '기타' }),
       el('h2', { text: c.name }),
       c.memo ? el('p', { class: 'cls-memo', text: c.memo }) : null),
-    el('div', { class: 'cls-grid' }, homeworkCard(c), stampCard(c))
+    el('div', { class: 'cls-grid' }, homeworkCard(c), stampCard(c)),
+    rulesCard(c)
   );
 }
 

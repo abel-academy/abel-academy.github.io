@@ -18,6 +18,12 @@ export const CLASS_SUBJECTS = ['국어', '영어', '수학', '기타'];
 // 클래스 스탬프판 칸 수 (클래스마다 관리자가 정함)
 export const STAMP_MAX_DEFAULT = 10;
 export const STAMP_MAX_LIMIT = 100;
+// 스탬프 규칙(클래스마다 최대 15개, 한 줄 40자)과 다 모았을 때 상품(100자)
+export const STAMP_RULES_MAX = 15;
+export const STAMP_RULE_LEN = 40;
+export const PRIZE_LEN = 100;
+// 모든 클래스의 서브관리자(보기 전용) 기본 계정: 아벨학원 계정
+export const DEFAULT_SUB_EMAIL = 'abelelara7098@gmail.com';
 export function stampMaxOf(c) {
   const n = Number(c && c.stampMax);
   return Number.isInteger(n) && n >= 1 && n <= STAMP_MAX_LIMIT ? n : STAMP_MAX_DEFAULT;
