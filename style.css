@@ -27,7 +27,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .privacy-link{color:#141414;font-weight:700;font-size:15px;text-decoration:underline;text-decoration-color:#FF5A1F;text-decoration-thickness:2px;text-underline-offset:4px}
 .privacy-link:hover{color:#141414;text-decoration-color:#141414}
 .foot-right{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
-/* 관리자 로그인 링크: 바닥글 맨 아래에 작게 */
+/* 선생님 로그인 링크: 바닥글 맨 아래에 작게 */
 .adm-link{padding:4px 0;font-size:12px;color:#5C5C5C;text-decoration:none}.adm-link:hover{color:#141414;text-decoration:underline}
 
 /* 어두운 영역(검정 배경) */

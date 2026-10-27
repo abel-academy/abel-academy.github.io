@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>관리자 | 아벨학원</title>
+<title>선생님 화면 | 아벨학원</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
 
 <header class="adm-top">
 <div class="adm-top-in">
-<a class="adm-brand" href="admin.html"><img src="logo-mark.png" alt="" width="333" height="176"><strong>아벨학원</strong><span class="adm-badge">관리자</span></a>
+<a class="adm-brand" href="admin.html"><img src="logo-mark.png" alt="" width="333" height="176"><strong>아벨학원</strong><span class="adm-badge">선생님</span></a>
 <div class="adm-who">
 <span id="who" hidden></span>
 <a href="index.html" target="_blank" rel="noopener">홈페이지 보기 ↗</a>
@@ -28,17 +28,17 @@
 
 <p id="adm-status" class="empty" role="status">불러오는 중…</p>
 
-<!-- 관리자 로그인 · 가입 -->
+<!-- 선생님 로그인 · 가입 -->
 <div id="adm-gate" class="adm-gate" hidden>
 <div class="card gate-card">
-<div class="gate-tabs" role="tablist" aria-label="관리자 로그인 또는 가입">
+<div class="gate-tabs" role="tablist" aria-label="선생님 로그인 또는 가입">
 <button type="button" role="tab" id="gt-login" aria-controls="adm-login" aria-selected="true">로그인</button>
-<button type="button" role="tab" id="gt-signup" aria-controls="adm-signup" aria-selected="false" tabindex="-1">관리자 가입</button>
+<button type="button" role="tab" id="gt-signup" aria-controls="adm-signup" aria-selected="false" tabindex="-1">선생님 가입</button>
 </div>
 
 <form id="adm-login" role="tabpanel" aria-labelledby="gt-login" class="gate-form" novalidate>
-<h1 style="font-size: 22px;">관리자 로그인</h1>
-<p class="view-note">관리자로 등록된 이메일 계정으로 로그인해 주세요. 학생(일반 회원)은 관리자 로그인을 할 수 없어요.</p>
+<h1 style="font-size: 22px;">선생님 로그인</h1>
+<p class="view-note">선생님으로 등록된 이메일 계정으로 로그인해 주세요. 학생(일반 회원)은 선생님 로그인을 할 수 없어요.</p>
 <div class="a-fld"><label for="ad-email">이메일</label><input id="ad-email" class="a-input" type="email" autocomplete="username" required></div>
 <div class="a-fld"><label for="ad-pw">비밀번호</label><input id="ad-pw" class="a-input" type="password" autocomplete="current-password" required></div>
 <p id="ad-err" class="a-msg err" role="alert" hidden></p>
@@ -49,8 +49,8 @@
 <!-- 비밀번호 재설정 메일 -->
 <form id="adm-reset" class="gate-form" novalidate hidden>
 <h1 id="rs-title" style="font-size: 22px;" tabindex="-1">비밀번호 재설정</h1>
-<p class="view-note">관리자로 가입한 이메일 주소를 적어 주세요. 그 주소로 비밀번호 재설정 메일을 보내 드려요. 메일의 링크를 누르면 새 비밀번호를 정할 수 있어요.</p>
-<div class="a-fld"><label for="rs-email">관리자 이메일</label><input id="rs-email" class="a-input" type="email" autocomplete="username" required></div>
+<p class="view-note">선생님으로 가입한 이메일 주소를 적어 주세요. 그 주소로 비밀번호 재설정 메일을 보내 드려요. 메일의 링크를 누르면 새 비밀번호를 정할 수 있어요.</p>
+<div class="a-fld"><label for="rs-email">선생님 이메일</label><input id="rs-email" class="a-input" type="email" autocomplete="username" required></div>
 <p id="rs-msg" class="a-msg" role="status" hidden></p>
 <button type="submit" class="a-btn primary big">재설정 메일 보내기</button>
 <button type="button" id="rs-back" class="link-btn forgot">← 로그인으로 돌아가기</button>
@@ -58,8 +58,8 @@
 </form>
 
 <form id="adm-signup" role="tabpanel" aria-labelledby="gt-signup" class="gate-form" novalidate hidden>
-<h1 style="font-size: 22px;">관리자 가입</h1>
-<p id="slot-info" class="slot-info">관리자 가입 방법을 확인하는 중…</p>
+<h1 style="font-size: 22px;">선생님 가입</h1>
+<p id="slot-info" class="slot-info">선생님 가입 방법을 확인하는 중…</p>
 <div class="a-fld"><label for="as-name">이름</label><input id="as-name" class="a-input" type="text" autocomplete="name" maxlength="20" required></div>
 <div class="a-fld"><label for="as-email">이메일</label><input id="as-email" class="a-input" type="email" autocomplete="username" required></div>
 <div class="a-fld"><label for="as-pw">비밀번호 <span class="hint">8자 이상</span></label><input id="as-pw" class="a-input" type="password" autocomplete="new-password" minlength="8" required></div>
@@ -76,7 +76,7 @@
 <div id="adm-pending" class="adm-gate" hidden>
 <div class="card gate-card" role="status">
 <h1 style="font-size: 22px;">가입 승인을 기다리고 있어요</h1>
-<p class="view-note" id="pending-text">이미 등록된 관리자가 승인하면 관리자 화면을 쓸 수 있어요.</p>
+<p class="view-note" id="pending-text">이미 등록된 선생님이 승인하면 선생님 화면을 쓸 수 있어요.</p>
 <div class="a-row">
 <button type="button" id="pending-check" class="a-btn primary">승인됐는지 다시 확인</button>
 <button type="button" id="pending-out" class="a-btn">로그아웃</button>
@@ -84,7 +84,7 @@
 </div>
 </div>
 
-<!-- 관리자 화면 -->
+<!-- 선생님 화면 -->
 <div id="adm-app" class="adm-layout" hidden>
 <nav class="adm-nav" role="tablist" aria-label="관리 메뉴" aria-orientation="vertical">
 <button type="button" role="tab" id="nav-home" aria-controls="view-home" aria-selected="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2"></rect><rect x="10" y="2" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2"></rect><rect x="2" y="10" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2"></rect><rect x="10" y="10" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2"></rect></svg>대시보드</button>
@@ -95,7 +95,7 @@
 <button type="button" role="tab" id="nav-views" aria-controls="view-views" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M1.5 9S4.5 3.5 9 3.5 16.5 9 16.5 9 13.5 14.5 9 14.5 1.5 9 1.5 9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="2"></circle></svg>시청 내역</button>
 <button type="button" role="tab" id="nav-videos" aria-controls="view-videos" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"></rect><path d="M7.5 7v4l3.5-2-3.5-2z" fill="currentColor"></path></svg>보충 강의 관리</button>
 <button type="button" role="tab" id="nav-notices" aria-controls="view-notices" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 7v4h3l5 3.5v-11L6 7H3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M14 6.5c.8.7 1.2 1.6 1.2 2.5s-.4 1.8-1.2 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>공지 관리</button>
-<button type="button" role="tab" id="nav-admins" aria-controls="view-admins" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l6 2.5v4c0 3.6-2.6 6.4-6 7.5-3.4-1.1-6-3.9-6-7.5v-4L9 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>관리자<span id="badge-admins" class="nav-badge" hidden></span></button>
+<button type="button" role="tab" id="nav-admins" aria-controls="view-admins" aria-selected="false" tabindex="-1"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l6 2.5v4c0 3.6-2.6 6.4-6 7.5-3.4-1.1-6-3.9-6-7.5v-4L9 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>선생님<span id="badge-admins" class="nav-badge" hidden></span></button>
 </nav>
 
 <main class="adm-main">
@@ -227,13 +227,13 @@
 
 <!-- 클래스 목록 -->
 <div id="cl-list-view" class="subpanel">
-<p class="view-note">클래스마다 <strong>대표관리자</strong> 1명이 학생·숙제·스탬프를 관리해요. <strong>서브관리자</strong>는 모든 클래스의 스탬프 현황과 기록을 볼 수만 있어요. 내 계정으로 열 수 있는 클래스만 눌러서 들어갈 수 있어요.</p>
+<p class="view-note">클래스마다 <strong>대표선생님</strong> 1명이 학생·숙제·스탬프를 관리해요. <strong>서브선생님</strong>은 모든 클래스의 스탬프 현황과 기록을 볼 수만 있어요. 내 계정으로 열 수 있는 클래스만 눌러서 들어갈 수 있어요.</p>
 <details class="card fold" id="cl-new">
 <summary>새 클래스 만들기</summary>
 <form id="cl-form" class="a-form" novalidate style="margin-top: 16px;">
 <div class="a-fld span-2"><label for="cl-name">클래스 이름</label><input id="cl-name" class="a-input" type="text" required maxlength="40" placeholder="예) 고1 수학 A반"></div>
 <div class="a-fld"><label for="cl-subject">과목</label><select id="cl-subject" class="a-input"><option>국어</option><option>영어</option><option selected>수학</option><option>기타</option></select></div>
-<div class="a-fld span-2"><label for="cl-owner">대표관리자 <span class="hint">이 관리자만 클래스를 열고 관리해요</span></label><select id="cl-owner" class="a-input"></select></div>
+<div class="a-fld span-2"><label for="cl-owner">대표선생님 <span class="hint">이 선생님만 클래스를 열고 관리해요</span></label><select id="cl-owner" class="a-input"></select></div>
 <div class="a-fld span-2"><label for="cl-memo">메모 <span class="hint">선택 · 학생에게도 보여요</span></label><input id="cl-memo" class="a-input" type="text" maxlength="200" placeholder="예) 월·수·금 오후 5시"></div>
 <div class="a-fld"><label for="cl-max">스탬프 최대 개수 <span class="hint">1~100칸</span></label><input id="cl-max" class="a-input" type="number" inputmode="numeric" min="1" max="100" step="1" value="10" required></div>
 <button type="submit" class="a-btn primary" style="min-height: 42px;">클래스 만들기</button>
@@ -246,7 +246,7 @@
 <div id="cl-list"></div>
 </div>
 <div class="card" id="cl-staff">
-<div class="card-head"><h2>서브관리자 <span class="card-sub">모든 클래스 · 보기 전용</span></h2></div>
+<div class="card-head"><h2>서브선생님 <span class="card-sub">모든 클래스 · 보기 전용</span></h2></div>
 <div id="cl-staff-body"></div>
 </div>
 </div>
@@ -268,7 +268,7 @@
 <button type="button" class="a-btn" data-refresh="timetable">새로고침</button>
 </div>
 </div>
-<p class="view-note" id="tt-head-note">강의실별 수업 시간표예요. 관리자만 볼 수 있어요.</p>
+<p class="view-note" id="tt-head-note">강의실별 수업 시간표예요. 선생님만 볼 수 있어요.</p>
 <div id="tt-empty"></div>
 <div class="card tt-card">
 <div class="tt-toolbar">
@@ -375,21 +375,21 @@
 </div>
 </section>
 
-<!-- 관리자 -->
+<!-- 선생님 -->
 <section id="view-admins" class="view" role="tabpanel" aria-labelledby="nav-admins" hidden>
 <div class="view-head">
-<h1>관리자</h1>
+<h1>선생님</h1>
 <button type="button" class="a-btn" data-refresh="admins">새로고침</button>
 </div>
-<p class="view-note">처음 2명은 관리자 가입을 하면 바로 관리자가 되고, 그 뒤로는 여기서 승인해야 관리자가 돼요. 모르는 사람의 신청은 거절해 주세요.</p>
+<p class="view-note">선생님 화면을 쓸 수 있는 계정이에요. 처음 2명은 선생님 가입을 하면 바로 등록되고, 그 뒤로는 여기서 승인해야 등록돼요. 모르는 사람의 신청은 거절해 주세요.</p>
 <div class="card"><div class="card-head"><h2>가입 승인 대기</h2></div><div id="ad-requests"></div></div>
-<div class="card"><div class="card-head"><h2>관리자 목록</h2></div><div id="ad-list"></div></div>
+<div class="card"><div class="card-head"><h2>선생님 목록</h2></div><div id="ad-list"></div></div>
 </section>
 
 </main>
 </div>
 
-<!-- 관리자 비밀번호 변경 -->
+<!-- 선생님 비밀번호 변경 -->
 <dialog id="pw-dialog" class="a-dlg" aria-labelledby="pw-title">
 <form id="pw-form" class="gate-form" novalidate>
 <div class="dlg-head" style="margin-bottom: 0;">
@@ -461,7 +461,7 @@
 <script>
 setTimeout(function () {
   var s = document.getElementById('adm-status');
-  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '관리자 화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '선생님 화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
 }, 10000);
 </script>
 </body>

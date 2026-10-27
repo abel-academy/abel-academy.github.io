@@ -1,4 +1,4 @@
-// 학생 페이지·관리자 페이지가 함께 쓰는 작은 도구들
+// 학생 페이지·선생님 페이지가 함께 쓰는 작은 도구들
 export const GRADES_HIGH = ['고1', '고2', '고3'];
 // 회원·보충 강의 학년 (초4 ~ 고3)
 export const GRADES_ALL = ['초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
@@ -10,12 +10,12 @@ export const SUBJECT_CLASS = { '국어': 'ko', '영어': 'en', '수학': 'ma' };
 export const APPLY_TYPES = ['입학 상담', '특강 신청'];
 export const APPLY_GRADES = ['초등학교 4학년', '초등학교 5학년', '초등학교 6학년', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'];
 export const APPLY_TIMES = ['평일 오후', '평일 저녁', '주말'];
-// 특강 구분: 관리자 화면에서 추가·삭제 (아직 한 번도 저장하지 않았을 때 쓰는 기본값)
+// 특강 구분: 선생님 화면에서 추가·삭제 (아직 한 번도 저장하지 않았을 때 쓰는 기본값)
 export const DEFAULT_SPECIALS = ['겨울방학 특강', '여름방학 특강', '시험 대비 특강'];
 export const SPECIAL_MAX = 20;
 export const NOTICE_CATEGORIES = ['공지', '안내', '설명회', '모집', '행사'];
 export const CLASS_SUBJECTS = ['국어', '영어', '수학', '기타'];
-// 클래스 스탬프판 칸 수 (클래스마다 관리자가 정함)
+// 클래스 스탬프판 칸 수 (클래스마다 선생님이 정함)
 export const STAMP_MAX_DEFAULT = 10;
 export const STAMP_MAX_LIMIT = 100;
 // 스탬프 규칙(클래스마다 최대 15개, 한 줄 40자)과 다 모았을 때 상품(100자)
@@ -29,7 +29,7 @@ export const TT_SUBJECTS = ['국어', '영어', '수학', '기타'];
 export const TT_DEFAULT_ROOMS = [{ id: 'r1', name: '1강의실' }, { id: 'r4', name: '4강의실' }, { id: 'r5', name: '5강의실' }, { id: 'r6', name: '6강의실' }, { id: 'r7', name: '7강의실' }];
 // 선생님 색 (시간표 칸 배경). 순서대로 선생님에게 하나씩, 시간표 설정에서 바꿀 수 있어요
 export const TT_COLORS = ['주황', '노랑', '초록', '파랑', '보라', '분홍', '청록', '갈색', '회색', '연두'];
-// 아벨학원 계정: 시간표를 짜고 고치는 계정 + 모든 클래스의 서브관리자(보기 전용) 기본 계정
+// 아벨학원 계정: 시간표를 짜고 고치는 계정 + 모든 클래스의 서브선생님(보기 전용) 기본 계정
 export const ACADEMY_EMAIL = 'abelelara7098@gmail.com';
 export const DEFAULT_SUB_EMAIL = ACADEMY_EMAIL;
 export function stampMaxOf(c) {

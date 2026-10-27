@@ -110,7 +110,7 @@ function emptyBox(title, text) {
 
 export async function renderClasses(box, student, adminPreview) {
   if (adminPreview) {
-    box.replaceChildren(emptyBox('관리자 미리보기에서는 클래스가 보이지 않아요.', '학생 계정으로 로그인하면 그 학생이 들어간 클래스의 숙제와 스탬프가 보여요.'));
+    box.replaceChildren(emptyBox('선생님 미리보기에서는 클래스가 보이지 않아요.', '학생 계정으로 로그인하면 그 학생이 들어간 클래스의 숙제와 스탬프가 보여요.'));
     return;
   }
   box.replaceChildren(el('p', { class: 'vstatus', role: 'status', text: '클래스를 불러오는 중…' }));

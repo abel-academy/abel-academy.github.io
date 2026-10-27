@@ -1,4 +1,4 @@
-/* 아벨학원 관리자 화면 (홈페이지와 다른 업무용 화면) */
+/* 아벨학원 선생님 화면 (홈페이지와 다른 업무용 화면) */
 body.admin{margin:0;background:#F4F3EF;font-family:'Noto Sans KR','Noto Sans CJK KR',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#141414;word-break:keep-all;-webkit-font-smoothing:antialiased}
 .admin *{box-sizing:border-box}
 .admin [hidden]{display:none!important}
@@ -140,7 +140,7 @@ details.tbl-view .tbl-wrap{margin-top:10px}
   .vrow .acts{grid-column:1 / -1;justify-content:flex-start}
 }
 
-/* ── 관리자 로그인·가입 ── */
+/* ── 선생님 로그인·가입 ── */
 .gate-card{width:min(440px,100%)}
 .gate-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:10px;background:#F2F0EB}
 .gate-tabs button{min-height:40px;border:0;border-radius:8px;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:#5C5C5C;cursor:pointer}

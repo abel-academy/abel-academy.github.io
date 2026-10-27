@@ -1,5 +1,5 @@
 // 상담·특강 신청서
-// 1) Firebase에 신청서를 저장 → 관리자 화면 '상담 신청서'에서 바로 확인
+// 1) Firebase에 신청서를 저장 → 선생님 화면 '상담 신청서'에서 바로 확인
 // 2) Netlify로 배포한 경우에는 Netlify Forms에도 보내 알림 메일을 받음 (GitHub Pages에서는 자동으로 건너뜀)
 import * as be from './backend.js';
 import { APPLY_TYPES, APPLY_GRADES, APPLY_TIMES, DEFAULT_SPECIALS, monthKey } from './common.js';
@@ -21,7 +21,7 @@ if (form) {
   const spBox = document.getElementById('special-box');
   const spSel = document.getElementById('f-special');
   const spNote = document.getElementById('special-note');
-  let specials = null; // 관리자가 정한 특강 목록 (불러오기 전에는 null)
+  let specials = null; // 선생님이 정한 특강 목록 (불러오기 전에는 null)
   const isSpecial = () => (form.querySelector('input[name="apply_type"]:checked') || {}).value === '특강 신청';
   function fillSpecials(list) {
     specials = list;

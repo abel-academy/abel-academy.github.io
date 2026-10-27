@@ -10,7 +10,7 @@ const loginBox = $('#v-login');
 const listBox = $('#v-list');
 const loginForm = $('#login-form');
 const loginErr = $('#lg-error');
-let viewer = null; // 지금 보고 있는 학생 (관리자 미리보기일 때는 null)
+let viewer = null; // 지금 보고 있는 학생 (선생님 미리보기일 때는 null)
 let shown = null;  // 화면에 띄운 학생 정보 { st, adminPreview }
 let classLoaded = false;
 
@@ -145,8 +145,8 @@ if (!be.configured) {
     try {
       const st = await be.getStudent(user.uid);
       if (!st) {
-        // 관리자가 로그인한 상태라면 학생 화면을 미리 볼 수 있음
-        if (await be.isAdmin(user.uid).catch(() => false)) { await showStudent({ name: '관리자', grade: '고1' }, true); return; }
+        // 선생님이 로그인한 상태라면 학생 화면을 미리 볼 수 있음
+        if (await be.isAdmin(user.uid).catch(() => false)) { await showStudent({ name: '선생님', grade: '고1' }, true); return; }
         show('login'); // 회원 정보가 막 만들어지는 중이거나 없는 계정
         return;
       }

@@ -14,7 +14,7 @@ import { firebaseConfig, STUDENT_EMAIL_DOMAIN } from './firebase-config.js';
 import { UNDER14_GRADES, DEFAULT_SPECIALS } from './common.js';
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
-export const FOUNDER_SLOTS = 2; // 승인 없이 바로 관리자가 될 수 있는 인원 (처음 2명)
+export const FOUNDER_SLOTS = 2; // 승인 없이 바로 선생님이 될 수 있는 인원 (처음 2명)
 
 let app = null, auth = null, db = null;
 if (configured) {
@@ -43,7 +43,7 @@ function loginIdToEmail(idOrEmail) {
   return v.includes('@') ? v : v + '@' + STUDENT_EMAIL_DOMAIN;
 }
 
-// 학생(일반 회원) 계정 주소인지 — 관리자 로그인·가입에서 막을 때 사용
+// 학생(일반 회원) 계정 주소인지 — 선생님 로그인·가입에서 막을 때 사용
 export function isStudentEmail(email) {
   return normalizeLoginId(email).endsWith('@' + STUDENT_EMAIL_DOMAIN);
 }
@@ -54,7 +54,7 @@ export function onUser(cb) {
   return onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email } : null));
 }
 
-// 학생은 아이디, 관리자는 이메일로 로그인
+// 학생은 아이디, 선생님은 이메일로 로그인
 export async function signIn(idOrEmail, password) {
   need();
   const cred = await signInWithEmailAndPassword(auth, loginIdToEmail(idOrEmail), password);
@@ -91,8 +91,8 @@ export async function changeMyPassword(currentPassword, newPassword) {
   await updatePassword(user, newPassword);
 }
 
-// 관리자 비밀번호 재설정 메일: 메일의 링크에서 새 비밀번호를 정함 (학생 아이디는 실제 메일 주소가 아니라서 관리자만 사용)
-// 메일을 다 바꾼 뒤 '계속'을 누르면 관리자 화면으로 돌아오도록 주소를 함께 보냄.
+// 선생님 비밀번호 재설정 메일: 메일의 링크에서 새 비밀번호를 정함 (학생 아이디는 실제 메일 주소가 아니라서 선생님만 사용)
+// 메일을 다 바꾼 뒤 '계속'을 누르면 선생님 화면으로 돌아오도록 주소를 함께 보냄.
 // 이 홈페이지 주소가 Firebase '승인된 도메인'에 없으면 돌아오는 주소 없이 다시 보냄
 export async function sendAdminPasswordReset(email) {
   need();
@@ -133,8 +133,8 @@ export async function recordLogin(student) {
   await batch.commit();
 }
 
-/* ── 관리자 가입·승인 ───────────────────────────── */
-// 처음 2명은 가입하면 바로 관리자, 그 뒤로는 기존 관리자가 승인해야 관리자가 됨
+/* ── 선생님 가입·승인 ───────────────────────────── */
+// 처음 2명은 가입하면 바로 선생님, 그 뒤로는 기존 선생님이 승인해야 선생님이 됨
 export async function adminSlotsUsed() {
   need();
   const snap = await getDoc(doc(db, 'meta', 'adminSlots'));
@@ -239,7 +239,7 @@ export async function listViews(max = 1000) {
   return rows(await getDocs(query(collection(db, 'views'), orderBy('at', 'desc'), limit(max))), ['at']);
 }
 
-/* ── 학생 계정 (관리자) ─────────────────────────── */
+/* ── 학생 계정 (선생님) ─────────────────────────── */
 export async function listStudents() {
   need();
   const snap = await getDocs(collection(db, 'students'));
@@ -249,7 +249,7 @@ export async function listStudents() {
   });
 }
 
-// 관리자 로그인이 풀리지 않도록, 보조 연결을 잠깐 만들어 학생 계정을 생성
+// 선생님 로그인이 풀리지 않도록, 보조 연결을 잠깐 만들어 학생 계정을 생성
 export async function createStudent({ loginId, password, name, grade }) {
   need();
   const id = normalizeLoginId(loginId);
@@ -295,7 +295,7 @@ export async function listLogins(max = 1000) {
 }
 
 /* ── 학원 소식(공지) ─────────────────────────────── */
-// 누구나 읽을 수 있고, 관리자만 올리고 지울 수 있음
+// 누구나 읽을 수 있고, 선생님만 올리고 지울 수 있음
 export async function listNotices(max = 50) {
   need();
   return rows(await getDocs(query(collection(db, 'notices'), orderBy('date', 'desc'), limit(max))));
@@ -332,8 +332,8 @@ export async function deleteNotice(id) {
   await batch.commit();
 }
 
-/* ── 특강 구분 (관리자가 추가·삭제) ─────────────────────── */
-// settings/specials 문서 하나에 목록으로 저장. 누구나 읽고, 관리자만 바꿈
+/* ── 특강 구분 (선생님이 추가·삭제) ─────────────────────── */
+// settings/specials 문서 하나에 목록으로 저장. 누구나 읽고, 선생님만 바꿈
 export async function getSpecials() {
   need();
   const snap = await getDoc(doc(db, 'settings', 'specials'));
@@ -346,7 +346,7 @@ export async function saveSpecials(items) {
 }
 
 /* ── 상담·특강 신청서 ───────────────────────────── */
-// 누구나 신청서를 1건 저장할 수 있고, 관리자만 열람·상태 변경·삭제
+// 누구나 신청서를 1건 저장할 수 있고, 선생님만 열람·상태 변경·삭제
 // 특강 신청은 특강 구분(special)이 꼭 있어야 하고, 입학 상담은 빈칸
 export async function addApplication(a) {
   need();
@@ -375,7 +375,7 @@ export async function deleteApplication(id) {
 }
 
 /* ── 클래스 · 숙제 · 스탬프 ─────────────────────────── */
-// 학생이 들어간 클래스는 학생 정보(students/{uid})의 classIds 에 관리자만 기록 (한 학생이 여러 클래스 가능)
+// 학생이 들어간 클래스는 학생 정보(students/{uid})의 classIds 에 선생님만 기록 (한 학생이 여러 클래스 가능)
 // 숙제는 classes/{id}/homework, 스탬프는 classes/{id}/stamps 에 한 건씩 저장
 
 // 여러 건을 나눠서 저장 (보안 규칙이 건마다 문서를 확인하므로 한 번에 5건씩)
@@ -392,7 +392,7 @@ export async function listClasses() {
   return rows(await getDocs(collection(db, 'classes')));
 }
 
-// 클래스마다 대표관리자(ownerId) 1명: 그 관리자만 숙제·스탬프·학생을 관리. 만든 사람이 아니어도 됨
+// 클래스마다 대표선생님(ownerId) 1명: 그 선생님만 숙제·스탬프·학생을 관리. 만든 사람이 아니어도 됨
 export async function addClass(c) {
   need();
   const ref = await addDoc(collection(db, 'classes'), {
@@ -410,7 +410,7 @@ export async function updateClass(id, fields) {
   await updateDoc(doc(db, 'classes', id), v);
 }
 
-// 서브관리자: 모든 클래스의 숙제·스탬프 현황과 기록을 볼 수만 있는 관리자 (settings/classStaff)
+// 서브선생님: 모든 클래스의 숙제·스탬프 현황과 기록을 볼 수만 있는 선생님 (settings/classStaff)
 export async function getClassStaff() {
   need();
   const snap = await getDoc(doc(db, 'settings', 'classStaff'));
@@ -466,13 +466,13 @@ export async function deleteHomework(classId, id) {
   await deleteDoc(doc(db, 'classes', classId, 'homework', id));
 }
 
-// 관리자: 클래스의 스탬프 전체
+// 선생님: 클래스의 스탬프 전체
 export async function listStamps(classId) {
   need();
   return rows(await getDocs(collection(db, 'classes', classId, 'stamps')));
 }
 
-// 관리자: 여러 학생에게 스탬프 1개씩
+// 선생님: 여러 학생에게 스탬프 1개씩
 export async function addStamps(classId, uids, reason) {
   need();
   const by = auth.currentUser.uid;
@@ -512,8 +512,8 @@ export async function myClasses(student) {
   return out.filter(Boolean).sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 }
 
-/* ── 강의실별 시간표 (관리자만 봄) ──────────────────── */
-// timetable/meta: 제목·메모·강의실·선생님 목록, teacherAdmins(선생님 id → 관리자 uid)
+/* ── 강의실별 시간표 (선생님만 봄) ──────────────────── */
+// timetable/meta: 제목·메모·강의실·선생님 목록, teacherAdmins(선생님 id → 선생님 uid)
 // timetableSlots: 수업 한 칸씩. 시간표 짜기는 아벨학원 계정만, 수업 정보는 담당 선생님도 고칠 수 있음 (보안 규칙)
 export async function getTimetableMeta() {
   need();

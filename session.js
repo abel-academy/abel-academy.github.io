@@ -31,7 +31,7 @@ async function update(user) {
   try {
     const st = await be.getStudent(user.uid);
     if (st && st.active) { signedInLinks(`${st.name}님`, 'videos.html'); return; }
-    if (!st && (await be.isAdmin(user.uid))) { signedInLinks('관리자 화면', 'admin.html'); return; }
+    if (!st && (await be.isAdmin(user.uid))) { signedInLinks('선생님 화면', 'admin.html'); return; }
   } catch (e) {
     console.warn('로그인 상태 확인 실패', e);
   }
@@ -48,7 +48,7 @@ if (be.configured) {
 }
 
 // 학생 로그인: 아이디·비밀번호 확인 → 회원 정보·사용 상태 확인 → 접속 기록 1건 남김
-// 관리자 이메일로 로그인하면 { admin: true }를 돌려줌
+// 선생님 이메일로 로그인하면 { admin: true }를 돌려줌
 export async function logIn(id, password) {
   const u = await be.signIn(id, password);
   const st = await be.getStudent(u.uid);

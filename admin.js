@@ -1,5 +1,5 @@
-// 아벨학원 관리자 화면
-// 대시보드 · 상담 신청서 · 신청 통계 · 학생 관리(학생 목록·접속 통계 / 클래스·숙제·스탬프) · 시청 내역 · 보충 강의 · 공지 · 관리자(가입 승인)
+// 아벨학원 선생님 화면
+// 대시보드 · 상담 신청서 · 신청 통계 · 학생 관리(학생 목록·접속 통계 / 클래스·숙제·스탬프) · 시청 내역 · 보충 강의 · 공지 · 선생님(가입 승인)
 import * as be from './backend.js';
 import { loadTimetable, classLessons } from './admin-timetable.js';
 import {
@@ -95,7 +95,7 @@ async function loadView(name, force) {
     } else if (name === 'notices') {
       loading('#nt-list'); await ensure('notices', () => be.listNotices(200), force); renderNotices();
     } else if (name === 'timetable') {
-      // 선생님 ↔ 관리자 계정, 학생 계정, 클래스 연결에 쓰는 목록을 함께 불러옴
+      // 선생님 ↔ 선생님 계정, 학생 계정, 클래스 연결에 쓰는 목록을 함께 불러옴
       loading('#tt-grid');
       await Promise.all([ensure('admins', be.listAdmins, force), ensure('students', be.listStudents, force)]);
       let classesErr = '';
@@ -123,7 +123,7 @@ function updateBadges() {
   if (cache.requests) set('#badge-admins', reqs, '승인 대기');
 }
 
-/* ── 로그인 · 관리자 가입 ─────────────────────────── */
+/* ── 로그인 · 선생님 가입 ─────────────────────────── */
 const gateTabs = [$('#gt-login'), $('#gt-signup')];
 function gateTab(which) {
   gateTabs.forEach((t) => {
@@ -149,8 +149,8 @@ async function refreshSlotInfo() {
     const left = be.FOUNDER_SLOTS - (await be.adminSlotsUsed());
     box.classList.toggle('open', left > 0);
     box.textContent = left > 0
-      ? `처음 관리자 ${be.FOUNDER_SLOTS}명까지는 가입하면 바로 관리자가 돼요. (남은 자리 ${left}명)`
-      : `처음 관리자 ${be.FOUNDER_SLOTS}명이 이미 등록되어 있어요. 가입하면 '승인 대기'가 되고, 기존 관리자가 승인하면 관리자로 등록돼요.`;
+      ? `처음 ${be.FOUNDER_SLOTS}명까지는 선생님 가입을 하면 바로 등록돼요. (남은 자리 ${left}명)`
+      : `처음 ${be.FOUNDER_SLOTS}명이 이미 등록되어 있어요. 가입하면 '승인 대기'가 되고, 이미 등록된 선생님이 승인하면 등록돼요.`;
   } catch (e) {
     box.textContent = friendlyError(e);
   }
@@ -166,7 +166,7 @@ async function decide(user) {
       me = { uid: user.uid, email: user.email, name: mine ? mine.name : '' };
       cache.admins = admins;
       $('#who').textContent = me.name ? `${me.name} (${me.email})` : me.email;
-      $('#home-hello').textContent = `${me.name || '관리자'}님, 안녕하세요. 오늘 ${formatDate(new Date())} 현황이에요.`;
+      $('#home-hello').textContent = `${me.name ? `${me.name} 선생님` : '선생님'}, 안녕하세요. 오늘 ${formatDate(new Date())} 현황이에요.`;
       show('app');
       openView(currentView);
       return;
@@ -175,17 +175,17 @@ async function decide(user) {
     if (student) {
       await be.signOutUser();
       gateTab('login');
-      message($('#ad-err'), '학생(일반) 회원은 관리자 로그인을 할 수 없어요. 홈페이지의 회원 로그인을 이용해 주세요.', 'err');
+      message($('#ad-err'), '학생(일반) 회원은 선생님 로그인을 할 수 없어요. 홈페이지의 회원 로그인을 이용해 주세요.', 'err');
       return;
     }
     const req = await be.getAdminRequest(user.uid).catch(() => null);
     if (req) {
-      $('#pending-text').textContent = `${req.name}(${req.email})님의 관리자 가입 신청이 접수되었어요. 이미 등록된 관리자가 승인하면 관리자 화면을 쓸 수 있어요.`;
+      $('#pending-text').textContent = `${req.name}(${req.email})님의 선생님 가입 신청이 접수되었어요. 이미 등록된 선생님이 승인하면 선생님 화면을 쓸 수 있어요.`;
       show('pending');
       return;
     }
     await be.signOutUser();
-    message($('#ad-err'), '관리자로 등록되지 않은 계정이에요.', 'err');
+    message($('#ad-err'), '선생님으로 등록되지 않은 계정이에요.', 'err');
   } catch (e) {
     show('status', friendlyError(e));
   }
@@ -203,7 +203,7 @@ $('#adm-login').addEventListener('submit', async (e) => {
   const email = $('#ad-email').value.trim(), pw = $('#ad-pw').value;
   if (!email || !pw) return message($('#ad-err'), '이메일과 비밀번호를 입력해 주세요.', 'err');
   if (!email.includes('@') || be.isStudentEmail(email)) {
-    return message($('#ad-err'), '학생(일반) 회원은 관리자 로그인을 할 수 없어요. 관리자는 가입한 이메일 주소로 로그인해 주세요.', 'err');
+    return message($('#ad-err'), '학생(일반) 회원은 선생님 로그인을 할 수 없어요. 선생님은 가입한 이메일 주소로 로그인해 주세요.', 'err');
   }
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
@@ -221,7 +221,7 @@ $('#adm-signup').addEventListener('submit', async (e) => {
   const pw = $('#as-pw').value, pw2 = $('#as-pw2').value;
   if (!name || name.length > 20) return message(err, '이름을 입력해 주세요. (20자 이내)', 'err');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return message(err, '이메일 주소를 확인해 주세요.', 'err');
-  if (be.isStudentEmail(email)) return message(err, '이 주소로는 관리자 가입을 할 수 없어요.', 'err');
+  if (be.isStudentEmail(email)) return message(err, '이 주소로는 선생님 가입을 할 수 없어요.', 'err');
   if (pw.length < 8) return message(err, '비밀번호는 8자 이상으로 정해 주세요.', 'err');
   if (pw !== pw2) return message(err, '비밀번호와 비밀번호 확인이 서로 달라요.', 'err');
   const btn = e.target.querySelector('button[type="submit"]');
@@ -253,7 +253,7 @@ function holdButton(btn, label) {
   resetTimer = setInterval(tick, 1000);
 }
 function sentText(email) {
-  return `입력한 이메일(${email})이 관리자 계정이라면 비밀번호 재설정 메일을 보냈어요. 메일함을 확인해 주세요. 몇 분이 지나도 안 오면 스팸함도 확인해 주세요. 메일의 링크를 눌러 새 비밀번호를 정한 뒤, 새 비밀번호로 로그인하면 돼요.`;
+  return `입력한 이메일(${email})이 선생님 계정이라면 비밀번호 재설정 메일을 보냈어요. 메일함을 확인해 주세요. 몇 분이 지나도 안 오면 스팸함도 확인해 주세요. 메일의 링크를 눌러 새 비밀번호를 정한 뒤, 새 비밀번호로 로그인하면 돼요.`;
 }
 function validAdminEmail(email) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) && !be.isStudentEmail(email);
@@ -276,7 +276,7 @@ $('#adm-reset').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = $('#rs-msg');
   const email = $('#rs-email').value.trim().toLowerCase();
-  if (!email.includes('@') || be.isStudentEmail(email)) return message(msg, '학생(일반 회원)은 이 방법을 쓸 수 없어요. 관리자로 가입한 이메일 주소를 적어 주세요.', 'err');
+  if (!email.includes('@') || be.isStudentEmail(email)) return message(msg, '학생(일반 회원)은 이 방법을 쓸 수 없어요. 선생님으로 가입한 이메일 주소를 적어 주세요.', 'err');
   if (!validAdminEmail(email)) return message(msg, '이메일 주소를 확인해 주세요.', 'err');
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
@@ -290,7 +290,7 @@ $('#adm-reset').addEventListener('submit', async (e) => {
   }
 });
 
-/* ── 비밀번호 변경 (로그인한 관리자) ─────────────────────── */
+/* ── 비밀번호 변경 (로그인한 선생님) ─────────────────────── */
 const pwDlg = $('#pw-dialog');
 $('#btn-pw').addEventListener('click', () => {
   $('#pw-form').reset();
@@ -403,7 +403,7 @@ function renderHome() {
   const goBtn = (text, view) => { const b = el('button', { type: 'button', class: 'a-btn small', text }); b.addEventListener('click', () => openView(view, true)); return b; };
   $('#home-alert').replaceChildren(...[
     reqs.length ? el('div', { class: 'alert' },
-      el('span', {}, el('strong', { text: `관리자 가입 승인 대기 ${reqs.length}건` }), ' — 아는 사람인지 확인한 뒤 승인해 주세요.'), goBtn('승인하러 가기', 'admins')) : null,
+      el('span', {}, el('strong', { text: `선생님 가입 승인 대기 ${reqs.length}건` }), ' — 아는 사람인지 확인한 뒤 승인해 주세요.'), goBtn('승인하러 가기', 'admins')) : null,
     pendingKids.length ? el('div', { class: 'alert' },
       el('span', {}, el('strong', { text: `보호자 동의 확인 대기 ${pendingKids.length}명` }), ' — 보호자께 전화로 동의를 확인한 뒤 학생 관리에서 \'동의 확인\'을 눌러 주세요.'), goBtn('학생 관리로 가기', 'students')) : null
   ].filter(Boolean));
@@ -1036,7 +1036,7 @@ function renderNotices() {
   })));
 }
 
-/* ── 관리자 · 가입 승인 ─────────────────────────── */
+/* ── 선생님 · 가입 승인 ─────────────────────────── */
 function renderAdmins() {
   const reqs = cache.requests || [];
   $('#ad-requests').replaceChildren(reqs.length
@@ -1044,29 +1044,29 @@ function renderAdmins() {
         const ok = el('button', { type: 'button', class: 'a-btn small primary', text: '승인' });
         const no = el('button', { type: 'button', class: 'a-btn small danger', text: '거절' });
         ok.addEventListener('click', async () => {
-          if (!confirm(`${r.name}(${r.email})님을 관리자로 승인할까요? 승인하면 상담 신청서·학생 정보를 모두 볼 수 있어요.`)) return;
+          if (!confirm(`${r.name}(${r.email})님을 선생님으로 승인할까요? 승인하면 선생님 화면에서 상담 신청서·학생 정보를 모두 볼 수 있어요.`)) return;
           ok.disabled = true;
           try { await be.approveAdminRequest(r); cache.requests = null; cache.admins = null; await loadView('admins', true); }
           catch (err) { alert(friendlyError(err)); ok.disabled = false; }
         });
         no.addEventListener('click', async () => {
-          if (!confirm(`${r.name}님의 관리자 가입 신청을 거절할까요?`)) return;
+          if (!confirm(`${r.name}님의 선생님 가입 신청을 거절할까요?`)) return;
           no.disabled = true;
           try { await be.rejectAdminRequest(r.uid); cache.requests = cache.requests.filter((x) => x.uid !== r.uid); renderAdmins(); updateBadges(); }
           catch (err) { alert(friendlyError(err)); no.disabled = false; }
         });
         return el('tr', {}, el('td', { text: formatDateTime(r.createdAt) }), el('td', {}, el('strong', { text: r.name })), el('td', { text: r.email }), el('td', {}, el('div', { class: 'a-row' }, ok, no)));
       }))
-    : el('p', { class: 'empty', text: '승인을 기다리는 관리자 가입 신청이 없어요.' }));
+    : el('p', { class: 'empty', text: '승인을 기다리는 선생님 가입 신청이 없어요.' }));
 
   const admins = [...(cache.admins || [])].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   $('#ad-list').replaceChildren(table(['이름', '이메일', '등록 방법', '등록 일시', ''], admins.map((a) => {
     const self = a.uid === me.uid;
     let act = el('span', { class: 'card-sub', text: self ? '나' : '' });
     if (!self) {
-      act = el('button', { type: 'button', class: 'a-btn small danger', text: '관리자 해제' });
+      act = el('button', { type: 'button', class: 'a-btn small danger', text: '선생님 해제' });
       act.addEventListener('click', async () => {
-        if (!confirm(`${a.name}(${a.email})님을 관리자에서 해제할까요? 해제하면 관리자 화면을 쓸 수 없어요.`)) return;
+        if (!confirm(`${a.name}(${a.email})님을 선생님 목록에서 해제할까요? 해제하면 선생님 화면을 쓸 수 없어요.`)) return;
         act.disabled = true;
         try { await be.removeAdmin(a.uid); cache.admins = cache.admins.filter((x) => x.uid !== a.uid); renderAdmins(); }
         catch (err) { alert(friendlyError(err)); act.disabled = false; }
@@ -1119,17 +1119,17 @@ const membersOf = (cid) => (cache.students || []).filter((s) => Array.isArray(s.
 const studentName = (uid) => { const s = (cache.students || []).find((x) => x.uid === uid); return s ? s.name : '(탈퇴한 학생)'; };
 const byGradeName = (a, b) => GRADES_ALL.indexOf(a.grade) - GRADES_ALL.indexOf(b.grade) || String(a.name || '').localeCompare(String(b.name || ''), 'ko');
 const newest = (a, b) => (b.createdAt || 0) - (a.createdAt || 0);
-const adminName = (uid) => { const a = (cache.admins || []).find((x) => x.uid === uid); return a ? (a.name || a.email) : '(해제된 관리자)'; };
+const adminName = (uid) => { const a = (cache.admins || []).find((x) => x.uid === uid); return a ? (a.name || a.email) : '(해제된 선생님)'; };
 const subIds = () => (cache.staff && cache.staff.subIds) || [];
 
-// 이 클래스에서 내 역할: owner(대표관리자) · sub(서브관리자, 보기 전용) · none(열람 불가)
+// 이 클래스에서 내 역할: owner(대표선생님) · sub(서브선생님, 보기 전용) · none(열람 불가)
 function roleOf(c) {
   if (!c.ownerId || c.ownerId === me.uid) return 'owner';
   if (subIds().includes(me.uid)) return 'sub';
   return 'none';
 }
 
-// 처음 한 번: 서브관리자 목록이 아직 없으면 아벨학원 계정을 모든 클래스의 서브관리자로 저장
+// 처음 한 번: 서브선생님 목록이 아직 없으면 아벨학원 계정을 모든 클래스의 서브선생님으로 저장
 async function initStaff() {
   if (!cache.staff || cache.staff.exists) return;
   const def = (cache.admins || []).find((a) => String(a.email || '').toLowerCase() === DEFAULT_SUB_EMAIL);
@@ -1144,7 +1144,7 @@ async function loadClasses(force) {
     ensure('admins', be.listAdmins, force),
     ensure('staff', be.getClassStaff, force)
   ]);
-  try { await initStaff(); } catch (e) { console.warn('서브관리자 기본값 저장 실패', e); }
+  try { await initStaff(); } catch (e) { console.warn('서브선생님 기본값 저장 실패', e); }
 }
 
 function fillOwnerSelect() {
@@ -1164,7 +1164,7 @@ $('#cl-form').addEventListener('submit', async (e) => {
   const ownerId = $('#cl-owner').value;
   const stampMax = readMax($('#cl-max'));
   if (!name) return message(msg, '클래스 이름을 입력해 주세요.', 'err');
-  if (!ownerId) return message(msg, '대표관리자를 골라 주세요.', 'err');
+  if (!ownerId) return message(msg, '대표선생님을 골라 주세요.', 'err');
   if (!stampMax) return message(msg, `스탬프 최대 개수는 1부터 ${STAMP_MAX_LIMIT}까지의 숫자로 적어 주세요.`, 'err');
   if ((cache.classes || []).some((c) => c.name === name)) return message(msg, '같은 이름의 클래스가 이미 있어요. 다른 이름으로 정해 주세요.', 'err');
   const btn = e.target.querySelector('button[type="submit"]');
@@ -1179,7 +1179,7 @@ $('#cl-form').addEventListener('submit', async (e) => {
       rulesFlash = `'${name}' 클래스를 만들었어요. 학생을 넣고 스탬프 규칙과 상품도 적어 보세요.`;
       openClass(id);
     } else {
-      message(msg, `'${name}' 클래스를 만들었어요. 대표관리자 ${adminName(ownerId)}님만 이 클래스를 열어 학생·숙제·스탬프를 관리할 수 있어요.`, 'ok');
+      message(msg, `'${name}' 클래스를 만들었어요. 대표선생님 ${adminName(ownerId)}님만 이 클래스를 열어 학생·숙제·스탬프를 관리할 수 있어요.`, 'ok');
       renderClasses();
     }
   } catch (err) {
@@ -1230,7 +1230,7 @@ function renderClassList() {
   const mine = list.filter((c) => roleOf(c) === 'owner').length;
   const sub = list.filter((c) => roleOf(c) === 'sub').length;
   $('#cl-count').textContent = `${list.length}개`;
-  $('#cl-mine').textContent = list.length ? `내가 대표관리자 ${mine}개` + (sub ? ` · 서브관리자로 볼 수 있음 ${sub}개` : '') : '';
+  $('#cl-mine').textContent = list.length ? `내가 대표선생님 ${mine}개` + (sub ? ` · 서브선생님으로 볼 수 있음 ${sub}개` : '') : '';
   message($('#cl-list-msg'), '');
   if (!list.length) {
     $('#cl-new').open = true;
@@ -1239,18 +1239,18 @@ function renderClassList() {
   }
   $('#cl-list').replaceChildren(el('ul', { class: 'cls-grid-list' }, list.map((c) => {
     const role = roleOf(c);
-    const pill = role === 'owner' ? el('span', { class: 'pill on', text: '대표관리자' })
-      : role === 'sub' ? el('span', { class: 'pill off', text: '서브관리자 · 보기 전용' })
+    const pill = role === 'owner' ? el('span', { class: 'pill on', text: '대표선생님' })
+      : role === 'sub' ? el('span', { class: 'pill off', text: '서브선생님 · 보기 전용' })
       : el('span', { class: 'pill lock', text: '열람 권한 없음' });
     const body = [
       el('span', { class: 'cls-item-top' }, subjBadge(c.subject), el('strong', { text: c.name })),
-      el('span', { class: 'cls-item-sub', text: `대표관리자 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'} · 학생 ${membersOf(c.id).length}명` }),
+      el('span', { class: 'cls-item-sub', text: `대표선생님 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'} · 학생 ${membersOf(c.id).length}명` }),
       pill
     ];
     if (role === 'none') {
-      const b = el('button', { type: 'button', class: 'cls-tile locked', 'data-cid': c.id, 'aria-label': `${c.name}: 대표관리자만 열 수 있어요` },
+      const b = el('button', { type: 'button', class: 'cls-tile locked', 'data-cid': c.id, 'aria-label': `${c.name}: 대표선생님만 열 수 있어요` },
         ...body, el('span', { class: 'lock-ico', 'aria-hidden': 'true', text: '🔒' }));
-      b.addEventListener('click', () => message($('#cl-list-msg'), `'${c.name}'은(는) 대표관리자 ${adminName(c.ownerId)}님과 서브관리자만 열 수 있어요.`, 'err'));
+      b.addEventListener('click', () => message($('#cl-list-msg'), `'${c.name}'은(는) 대표선생님 ${adminName(c.ownerId)}님과 서브선생님만 열 수 있어요.`, 'err'));
       return el('li', {}, b);
     }
     const b = el('button', { type: 'button', class: 'cls-tile', 'data-cid': c.id }, ...body, el('span', { class: 'go', 'aria-hidden': 'true', text: '열기 →' }));
@@ -1266,15 +1266,15 @@ function renderStaff() {
   const names = subs.length
     ? el('ul', { class: 'staff-list' }, subs.map((uid) => {
         const a = (cache.admins || []).find((x) => x.uid === uid);
-        return el('li', {}, el('strong', { text: a ? a.name || '(이름 없음)' : '(해제된 관리자)' }), a ? el('span', { class: 'sub', text: a.email }) : null, uid === me.uid ? el('span', { class: 'pill on', text: '나' }) : null);
+        return el('li', {}, el('strong', { text: a ? a.name || '(이름 없음)' : '(해제된 선생님)' }), a ? el('span', { class: 'sub', text: a.email }) : null, uid === me.uid ? el('span', { class: 'pill on', text: '나' }) : null);
       }))
-    : el('p', { class: 'empty', style: 'padding: 12px 0; text-align: left;', text: cache.staff && cache.staff.exists ? '지정된 서브관리자가 없어요.' : `아벨학원 계정(${DEFAULT_SUB_EMAIL})이 관리자로 가입하면 자동으로 모든 클래스의 서브관리자가 돼요.` });
-  const note = el('p', { class: 'view-note', text: '서브관리자는 모든 클래스의 학생 목록, 스탬프 현황·기록, 숙제, 스탬프 규칙을 볼 수 있지만 스탬프를 주거나 빼는 등 바꾸지는 못해요.' });
+    : el('p', { class: 'empty', style: 'padding: 12px 0; text-align: left;', text: cache.staff && cache.staff.exists ? '지정된 서브선생님이 없어요.' : `아벨학원 계정(${DEFAULT_SUB_EMAIL})이 선생님으로 가입하면 자동으로 모든 클래스의 서브선생님이 돼요.` });
+  const note = el('p', { class: 'view-note', text: '서브선생님은 모든 클래스의 학생 목록, 스탬프 현황·기록, 숙제, 스탬프 규칙을 볼 수 있지만 스탬프를 주거나 빼는 등 바꾸지는 못해요.' });
   if (!staffEditing) {
-    const edit = iCanEdit ? el('button', { type: 'button', class: 'a-btn small', id: 'staff-edit', text: '서브관리자 바꾸기' }) : null;
+    const edit = iCanEdit ? el('button', { type: 'button', class: 'a-btn small', id: 'staff-edit', text: '서브선생님 바꾸기' }) : null;
     if (edit) edit.addEventListener('click', () => { staffEditing = true; renderStaff(); $('#staff-form input').focus(); });
     box.replaceChildren(...[note, names,
-      edit ? el('div', { style: 'margin-top: 12px;' }, edit) : el('p', { class: 'view-note', style: 'margin-top: 10px;', text: '서브관리자 설정은 지금 서브관리자인 계정에서만 바꿀 수 있어요.' })].filter(Boolean));
+      edit ? el('div', { style: 'margin-top: 12px;' }, edit) : el('p', { class: 'view-note', style: 'margin-top: 10px;', text: '서브선생님 설정은 지금 서브선생님인 계정에서만 바꿀 수 있어요.' })].filter(Boolean));
     return;
   }
   const checks = (cache.admins || []).map((a) => el('label', { class: 'pick' },
@@ -1288,15 +1288,15 @@ function renderStaff() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const next = [...form.querySelectorAll('input:checked')].map((x) => x.value);
-    if (next.length > 10) return message(msg, '서브관리자는 10명까지 정할 수 있어요.', 'err');
-    if (subs.includes(me.uid) && !next.includes(me.uid) && !confirm('나를 서브관리자에서 빼면, 내가 대표가 아닌 클래스는 더 이상 볼 수 없고 이 설정도 바꿀 수 없어요. 계속할까요?')) return;
+    if (next.length > 10) return message(msg, '서브선생님은 10명까지 정할 수 있어요.', 'err');
+    if (subs.includes(me.uid) && !next.includes(me.uid) && !confirm('나를 서브선생님에서 빼면, 내가 대표가 아닌 클래스는 더 이상 볼 수 없고 이 설정도 바꿀 수 없어요. 계속할까요?')) return;
     save.disabled = true;
     try {
       await be.saveClassStaff(next);
       cache.staff = { exists: true, subIds: next };
       staffEditing = false;
       renderClasses();
-      message($('#cl-list-msg'), '서브관리자를 저장했어요.', 'ok');
+      message($('#cl-list-msg'), '서브선생님을 저장했어요.', 'ok');
     } catch (err) { message(msg, friendlyError(err), 'err'); save.disabled = false; }
   });
   box.replaceChildren(note, form);
@@ -1354,7 +1354,7 @@ function classHeadCard(c, data, own) {
     const form = el('form', { class: 'a-form', novalidate: true },
       el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-name', text: '클래스 이름' }), name),
       el('div', { class: 'a-fld' }, el('label', { for: 'ce-subject', text: '과목' }), subj),
-      el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-owner' }, '대표관리자 ', el('span', { class: 'hint', text: '다른 관리자에게 넘길 수 있어요' })), owner),
+      el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-owner' }, '대표선생님 ', el('span', { class: 'hint', text: '다른 선생님에게 넘길 수 있어요' })), owner),
       el('div', { class: 'a-fld span-2' }, el('label', { for: 'ce-memo' }, '메모 ', el('span', { class: 'hint', text: '학생에게도 보여요' })), memo),
       el('div', { class: 'a-fld' }, el('label', { for: 'ce-max' }, '스탬프 최대 개수 ', el('span', { class: 'hint', text: `1~${STAMP_MAX_LIMIT}` })), max),
       el('div', { class: 'a-row' }, save, cancel));
@@ -1367,12 +1367,12 @@ function classHeadCard(c, data, own) {
       const over = members.filter((s) => data.stamps.filter((x) => x.studentId === s.uid).length > v.stampMax).length;
       if (over && !confirm(`스탬프를 이미 ${v.stampMax}개보다 많이 받은 학생이 ${over}명 있어요. 그 학생들의 스탬프는 지워지지 않고, 스탬프판은 '다 채움'으로 보여요. 이대로 바꿀까요?`)) return;
       const handOver = v.ownerId !== me.uid;
-      if (handOver && !confirm(`대표관리자를 ${adminName(v.ownerId)}님으로 바꿀까요?\n바꾸면 나는 이 클래스를 관리할 수 없어요` + (subIds().includes(me.uid) ? ' (서브관리자로 보기만 할 수 있어요).' : '. 다시 열 수도 없어요.'))) return;
+      if (handOver && !confirm(`대표선생님을 ${adminName(v.ownerId)}님으로 바꿀까요?\n바꾸면 나는 이 클래스를 관리할 수 없어요` + (subIds().includes(me.uid) ? ' (서브선생님으로 보기만 할 수 있어요).' : '. 다시 열 수도 없어요.'))) return;
       save.disabled = true;
       try {
         await be.updateClass(c.id, v);
         Object.assign(c, v); editingClass = false;
-        if (handOver && roleOf(c) === 'none') { backToList(c.id); message($('#cl-list-msg'), `'${c.name}'의 대표관리자를 ${adminName(v.ownerId)}님으로 바꿨어요.`, 'ok'); }
+        if (handOver && roleOf(c) === 'none') { backToList(c.id); message($('#cl-list-msg'), `'${c.name}'의 대표선생님을 ${adminName(v.ownerId)}님으로 바꿨어요.`, 'ok'); }
         else renderClassDetail('#cl-edit');
       } catch (err) { message(msg, friendlyError(err), 'err'); save.disabled = false; }
     });
@@ -1380,9 +1380,9 @@ function classHeadCard(c, data, own) {
     setTimeout(() => name.focus(), 0);
     return card;
   }
-  let actions = el('span', { class: 'pill off', text: '서브관리자 · 보기 전용' });
+  let actions = el('span', { class: 'pill off', text: '서브선생님 · 보기 전용' });
   if (own) {
-    const edit = el('button', { type: 'button', class: 'a-btn small', id: 'cl-edit', text: '정보·대표관리자 고치기' });
+    const edit = el('button', { type: 'button', class: 'a-btn small', id: 'cl-edit', text: '정보·대표선생님 고치기' });
     edit.addEventListener('click', () => { editingClass = true; renderClassDetail(); });
     const del = el('button', { type: 'button', class: 'a-btn small danger', text: '클래스 삭제' });
     del.addEventListener('click', async () => {
@@ -1397,13 +1397,13 @@ function classHeadCard(c, data, own) {
         message($('#cl-list-msg'), `'${c.name}' 클래스를 삭제했어요.`, 'ok');
       } catch (err) { alert(friendlyError(err)); del.disabled = false; }
     });
-    actions = el('div', { class: 'a-row' }, el('span', { class: 'pill on', style: 'align-self: center;', text: '대표관리자' }), edit, del);
+    actions = el('div', { class: 'a-row' }, el('span', { class: 'pill on', style: 'align-self: center;', text: '대표선생님' }), edit, del);
   }
   card.append(...[
     el('div', { class: 'cls-head' },
       el('div', { class: 'cls-head-main' }, subjBadge(c.subject), el('h2', { text: c.name })),
       actions),
-    el('p', { class: 'view-note', style: 'margin-top: 8px;', text: `대표관리자 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'}` + (c.memo ? ` · ${c.memo}` : '') }),
+    el('p', { class: 'view-note', style: 'margin-top: 8px;', text: `대표선생님 ${c.ownerId ? adminName(c.ownerId) : '(정해지지 않음)'}` + (c.memo ? ` · ${c.memo}` : '') }),
     el('p', { class: 'view-note cls-lessons', id: 'cl-lessons', hidden: true }),
     el('div', { class: 'kpis', style: 'margin-top: 18px;' },
       kpi('학생', members.length, '명'),
@@ -1414,7 +1414,7 @@ function classHeadCard(c, data, own) {
   return card;
 }
 
-// 스탬프 규칙 · 다 모았을 때 상품 (그 반 학생과 관리자 모두에게 보임)
+// 스탬프 규칙 · 다 모았을 때 상품 (그 반 학생과 선생님 모두에게 보임)
 function rulesCard(c, own) {
   const rules = Array.isArray(c.stampRules) ? c.stampRules : [];
   const msg = el('p', { class: 'a-msg', role: 'status', hidden: true });
@@ -1545,7 +1545,7 @@ function membersCard(c, data, own) {
   });
 
   const head = el('div', { class: 'card-head' }, el('h2', {}, '학생 · 스탬프 현황 ', el('span', { class: 'card-sub', text: `${members.length}명` })),
-    el('span', { class: 'card-sub', text: own ? `스탬프판 ${max}칸 · 다 채우면 더 줄 수 없어요. 초기화하면 0개부터 다시 모아요` : `스탬프판 ${max}칸 · 서브관리자는 볼 수만 있어요` }));
+    el('span', { class: 'card-sub', text: own ? `스탬프판 ${max}칸 · 다 채우면 더 줄 수 없어요. 초기화하면 0개부터 다시 모아요` : `스탬프판 ${max}칸 · 서브선생님은 볼 수만 있어요` }));
   const tableEl = el('div', { style: 'margin-top: 16px;' }, members.length
     ? table(own ? ['이름', '학년', '아이디', { label: '스탬프', num: true }, '스탬프 주기 · 초기화', ''] : ['이름', '학년', '아이디', { label: '스탬프', num: true }, '마지막으로 받은 때'], rowsEl)
     : el('p', { class: 'empty', text: own ? '아직 넣은 학생이 없어요. 아래에서 학생을 골라 넣어 주세요.' : '아직 이 클래스에 학생이 없어요.' }));
@@ -1681,7 +1681,7 @@ function homeworkAdminCard(c, data, own) {
 function stampLogCard(c, data, own) {
   const list = [...data.stamps].sort(newest);
   const shown = list.slice(0, 50);
-  const head = ['준 날짜', '학생', '이유', '준 관리자'];
+  const head = ['준 날짜', '학생', '이유', '준 선생님'];
   if (own) head.push('');
   const d = el('details', { class: 'card fold cls-log', open: stampLogOpen || !own },
     el('summary', {}, '스탬프 기록 ', el('span', { class: 'card-sub', text: `${list.length}개` })),

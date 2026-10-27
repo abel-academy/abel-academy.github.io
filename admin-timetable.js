@@ -1,5 +1,5 @@
-// 관리자 화면 → 시간표: 요일마다 강의실(열) × 시간(행) 격자
-// · 선생님마다 색이 달라요. 시간표의 선생님은 이름이 같은 관리자 계정과 연결돼요
+// 선생님 화면 → 시간표: 요일마다 강의실(열) × 시간(행) 격자
+// · 선생님마다 색이 달라요. 시간표의 선생님은 이름이 같은 선생님 계정과 연결돼요
 // · 수업을 누르면 옆에 '수업 정보'(학생 명단 · 학생 계정 연결 · 클래스 연결)가 보여요
 // · 시간표 짜기(수업 추가·삭제·옮기기, 설정, 파일 불러오기)는 아벨학원 계정만 할 수 있어요
 //   편집 모드에서 수업을 꾹 누른 채 끌면 옮기고, 휴지통에 놓으면 삭제, 빈 칸을 꾹 눌러 아래로 끌면 새 수업
@@ -18,7 +18,7 @@ const MOVE_TOL = 8;      // 꾹 누르는 동안 이보다 많이 움직이면 �
 const OLD_EMPTY_ROOMS = { r2: '2강의실', r3: '3강의실' };
 
 const state = { meta: null, slots: null, day: null, teacher: '', sel: null, editMode: false, loaded: false };
-// admin.js 가 넘겨 주는 정보: 로그인한 관리자, 관리자·학생·클래스 목록, 클래스 화면으로 가기 등
+// admin.js 가 넘겨 주는 정보: 로그인한 선생님, 선생님·학생·클래스 목록, 클래스 화면으로 가기 등
 let ctx = { me: { uid: null, email: '', name: '' }, admins: [], students: [], classes: [], classesErr: '', roleOfClass: () => 'none', goToClass: () => {}, classesChanged: () => {} };
 let infoFlash = null;   // 수업 정보 칸 안내 문구 { id, text, kind }
 let draft = null;       // 저장 전 고치는 중인 설정
@@ -55,10 +55,10 @@ const isMyTeacher = (tid) => Boolean(ctx.me.uid) && Boolean(tid) && teacherAdmin
 const canEditInfo = (s) => isEditor() || isMyTeacher(s.teacher);
 const myTeachers = () => teachers().filter((t) => isMyTeacher(t.id));
 
-/* ── 관리자 · 학생 · 클래스 ── */
+/* ── 선생님 · 학생 · 클래스 ── */
 const adminById = (uid) => ctx.admins.find((a) => a.uid === uid);
-const adminLabel = (uid) => { const a = adminById(uid); return a ? `${a.name || '(이름 없음)'} (${a.email || ''})` : '(해제된 관리자)'; };
-const adminName = (uid) => { const a = adminById(uid); return a ? a.name || a.email : '(해제된 관리자)'; };
+const adminLabel = (uid) => { const a = adminById(uid); return a ? `${a.name || '(이름 없음)'} (${a.email || ''})` : '(해제된 선생님)'; };
+const adminName = (uid) => { const a = adminById(uid); return a ? a.name || a.email : '(해제된 선생님)'; };
 const studentById = (uid) => ctx.students.find((s) => s.uid === uid);
 const normName = (n) => String(n || '').replace(/\s+/g, '').replace(/(선생님|쌤|원장님|원장)$/, '');
 
@@ -104,7 +104,7 @@ function autoStudentLinks(s) {
   });
   return out;
 }
-// 이름이 같은 관리자 계정과 선생님 연결: 한 번도 정하지 않은 선생님만 (연결 안 함으로 정했으면 그대로)
+// 이름이 같은 선생님 계정과 선생님 연결: 한 번도 정하지 않은 선생님만 (연결 안 함으로 정했으면 그대로)
 function autoTeacherLinks(map) {
   const out = [];
   teachers().forEach((t) => {
@@ -165,7 +165,7 @@ export async function classLessons(classId) {
   return (state.slots || []).filter((s) => s.classId === classId).sort(byDayTime).map(lessonLabel);
 }
 
-// 아벨학원 계정으로 열면: 이름이 같은 관리자 계정과 선생님 연결, 예전 시간표의 빈 2·3강의실 정리
+// 아벨학원 계정으로 열면: 이름이 같은 선생님 계정과 선생님 연결, 예전 시간표의 빈 2·3강의실 정리
 async function tidyMeta() {
   if (!state.meta) return;
   const notes = [];
@@ -180,7 +180,7 @@ async function tidyMeta() {
   const linked = autoTeacherLinks(next.teacherAdmins);
   if (linked.length) {
     linked.forEach(([tid, uid]) => { next.teacherAdmins[tid] = uid; });
-    notes.push(`${linked.map(([tid]) => teacherName(tid)).join('·')} 선생님을 이름이 같은 관리자 계정과 연결했어요`);
+    notes.push(`${linked.map(([tid]) => teacherName(tid)).join('·')} 선생님을 이름이 같은 선생님 계정과 연결했어요`);
   }
   if (!notes.length) return;
   try {
@@ -225,7 +225,7 @@ function renderAccess() {
   b.textContent = state.editMode ? '편집 끝내기' : '시간표 편집';
   b.classList.toggle('primary', state.editMode);
   $('#tt-head-note').textContent = ed
-    ? '강의실별 수업 시간표예요. 수업을 누르면 옆에 수업 정보가 보여요. \'시간표 편집\'을 켜면 수업을 꾹 눌러 끌어서 옮기거나 지우고, 빈 칸을 꾹 눌러 새 수업을 넣을 수 있어요. 관리자만 볼 수 있어요.'
+    ? '강의실별 수업 시간표예요. 수업을 누르면 옆에 수업 정보가 보여요. \'시간표 편집\'을 켜면 수업을 꾹 눌러 끌어서 옮기거나 지우고, 빈 칸을 꾹 눌러 새 수업을 넣을 수 있어요. 선생님만 볼 수 있어요.'
     : '강의실별 수업 시간표예요. 수업을 누르면 옆에 수업 정보와 학생 명단이 보여요. 시간표는 아벨학원 계정만 고칠 수 있고, 수업 정보는 그 수업 담당 선생님도 고칠 수 있어요.';
 }
 
@@ -276,7 +276,7 @@ function renderLegend() {
     const acc = t ? teacherAdmin(t.id) : '';
     const b = el('button', {
       type: 'button', class: 'tt-chip' + (on ? ' on' : ''), 'aria-pressed': String(on), 'data-t': id,
-      title: t ? (acc ? `관리자 계정: ${adminLabel(acc)}` : '관리자 계정과 아직 연결되지 않았어요') : null
+      title: t ? (acc ? `선생님 계정: ${adminLabel(acc)}` : '선생님 계정과 아직 연결되지 않았어요') : null
     }, t ? el('i', { class: `tt-dot ${colorClass(t)}`, 'aria-hidden': 'true' }) : null, label,
       t && isMyTeacher(t.id) ? el('span', { class: 'tt-me', text: '나' }) : null);
     b.addEventListener('click', () => { state.teacher = id && state.teacher === id ? '' : id; renderLegend(); renderGrid(); });
@@ -433,7 +433,7 @@ function renderInfo() {
     el('div', { class: 'tt-info-who' },
       t ? el('i', { class: `tt-dot ${colorClass(t)}`, 'aria-hidden': 'true' }) : null,
       el('strong', { text: t ? `${t.name} 선생님` : '담당 선생님 없음' }),
-      t ? el('span', { class: 'tt-info-sub', text: acc ? `관리자 계정 ${adminLabel(acc)}` + (acc === ctx.me.uid ? ' · 나' : '') : '관리자 계정 연결 안 됨' }) : null),
+      t ? el('span', { class: 'tt-info-sub', text: acc ? `선생님 계정 ${adminLabel(acc)}` + (acc === ctx.me.uid ? ' · 나' : '') : '선생님 계정 연결 안 됨' }) : null),
     fl ? el('p', { class: 'a-msg ' + fl.kind, role: fl.kind === 'err' ? 'alert' : 'status', id: 'tt-info-msg', text: fl.text }) : null,
     studentsSection(s, can),
     s.memo ? el('section', { class: 'tt-info-sec' }, el('h3', { text: '메모' }), el('p', { class: 'tt-info-memo', text: s.memo })) : null,
@@ -518,14 +518,14 @@ function classSection(s, can) {
     const members = ctx.students.filter((st) => (st.classIds || []).includes(c.id));
     const linked = linkedUids(s);
     const missing = linked.filter((uid) => !members.some((m) => m.uid === uid));
-    sec.append(el('p', { class: 'tt-cls' }, el('span', { class: 'tt-cls-name', text: c.name }), el('span', { class: 'tt-info-sub', text: `대표관리자 ${adminName(c.ownerId)} · 클래스 학생 ${members.length}명` })));
+    sec.append(el('p', { class: 'tt-cls' }, el('span', { class: 'tt-cls-name', text: c.name }), el('span', { class: 'tt-info-sub', text: `대표선생님 ${adminName(c.ownerId)} · 클래스 학생 ${members.length}명` })));
     if (linked.length) sec.append(el('p', { class: 'tt-info-sub', text: `이 수업에서 계정이 연결된 학생 ${linked.length}명 중 ${linked.length - missing.length}명이 클래스에 있어요.` }));
     const row = el('div', { class: 'tt-info-acts' });
     if (missing.length && role === 'owner') row.append(smallBtn(`클래스에 ${missing.length}명 넣기`, () => addToClass(s, c, missing), 'primary'));
     if (role !== 'none') row.append(smallBtn('클래스 열기', () => ctx.goToClass(c.id)));
     if (can) row.append(smallBtn('연결 끊기', () => setClass(s, '')));
     if (row.childNodes.length) sec.append(row);
-    if (missing.length && role !== 'owner') sec.append(note(`클래스에 학생을 넣는 건 대표관리자 ${adminName(c.ownerId)}님만 할 수 있어요.`));
+    if (missing.length && role !== 'owner') sec.append(note(`클래스에 학생을 넣는 건 대표선생님 ${adminName(c.ownerId)}님만 할 수 있어요.`));
     const sibs = (state.slots || []).filter((x) => x.id !== s.id && x.classId === c.id).sort(byDayTime);
     if (sibs.length) sec.append(note(`같은 클래스로 연결된 수업: ${sibs.map(lessonLabel).join(', ')}`));
     return sec;
@@ -566,13 +566,13 @@ async function createClassFor(s) {
   let name = [s.grade, s.subject].filter(Boolean).join(' ') + (t ? ` (${t.name})` : '');
   if (ctx.classes.some((c) => c.name === name)) name += ` ${s.day} ${short(s.start)}`;
   name = name.slice(0, 40);
-  if (!confirm(`'${name}' 클래스를 만들고 이 수업과 연결할까요?\n대표관리자: ${adminLabel(owner)}${owner === ctx.me.uid ? ' (나)' : ''}\n\n클래스 이름과 대표관리자는 나중에 학생 관리 → 클래스에서 바꿀 수 있어요.`)) return;
+  if (!confirm(`'${name}' 클래스를 만들고 이 수업과 연결할까요?\n대표선생님: ${adminLabel(owner)}${owner === ctx.me.uid ? ' (나)' : ''}\n\n클래스 이름과 대표선생님은 나중에 학생 관리 → 클래스에서 바꿀 수 있어요.`)) return;
   try {
     const id = await be.addClass({ name, subject: TT_SUBJECTS.includes(s.subject) ? s.subject : '기타', memo: `시간표: ${lessonLabel(s)}`, stampMax: STAMP_MAX_DEFAULT, ownerId: owner });
     const list = await be.listClasses();
     ctx.classes = list;
     ctx.classesChanged(list);
-    await setClass(s, id, `'${name}' 클래스를 만들고 연결했어요.` + (owner !== ctx.me.uid ? ` 대표관리자 ${adminName(owner)}님이 학생·숙제·스탬프를 관리해요.` : ''));
+    await setClass(s, id, `'${name}' 클래스를 만들고 연결했어요.` + (owner !== ctx.me.uid ? ` 대표선생님 ${adminName(owner)}님이 학생·숙제·스탬프를 관리해요.` : ''));
   } catch (e) { infoFlash = { id: s.id, text: friendlyError(e), kind: 'err' }; renderInfo(); }
 }
 
@@ -597,7 +597,7 @@ function permissionNote(s, can, t, acc) {
   if (isEditor()) text = '아벨학원 계정은 이 수업의 모든 내용을 고칠 수 있어요.';
   else if (can) text = '내가 맡은 수업이라 학년·학생·계정 연결·클래스 연결·메모를 고칠 수 있어요. 요일·시간·강의실·과목·선생님 바꾸기와 수업 추가·삭제는 아벨학원 계정만 할 수 있어요.';
   else if (t && acc) text = `이 수업은 ${t.name} 선생님과 아벨학원 계정만 고칠 수 있어요.`;
-  else if (t) text = `${t.name} 선생님의 관리자 계정이 아직 연결되지 않아서, 지금은 아벨학원 계정만 고칠 수 있어요.`;
+  else if (t) text = `${t.name} 선생님 계정이 아직 연결되지 않아서, 지금은 아벨학원 계정만 고칠 수 있어요.`;
   else text = '이 수업은 아벨학원 계정만 고칠 수 있어요.';
   return el('p', { class: 'tt-info-perm', text });
 }
@@ -919,7 +919,7 @@ $('#tt-delete').addEventListener('click', async () => {
 
 $('#tt-print').addEventListener('click', () => window.print());
 
-/* ── 설정: 제목·메모·강의실·선생님(색 · 관리자 계정) — 아벨학원 계정만 ── */
+/* ── 설정: 제목·메모·강의실·선생님(색 · 선생님 계정) — 아벨학원 계정만 ── */
 function renderSettings() {
   const box = $('#tt-settings-body');
   if (!isEditor()) { box.replaceChildren(); return; }
@@ -955,8 +955,8 @@ function renderSettings() {
     const color = el('select', { class: 'a-input tt-color', 'aria-label': `${t.name || i + 1 + '번째'} 선생님 색` }, TT_COLORS.map((c, ci) => el('option', { value: String(ci), selected: ci === t.color, text: c })));
     color.addEventListener('change', () => { t.color = Number(color.value); sw.className = `tt-dot big tt-t${t.color}`; });
     const matchOf = () => admins.filter((a) => normName(a.name) && normName(a.name) === normName(t.name));
-    const autoText = () => { const hit = matchOf(); return hit.length === 1 ? `이름이 같은 계정: ${hit[0].name}` : hit.length > 1 ? '이름이 같은 계정이 여러 개라 직접 골라 주세요' : '이름이 같은 관리자 계정 없음'; };
-    const link = el('select', { class: 'a-input tt-link', 'aria-label': `${t.name || i + 1 + '번째'} 선생님과 연결할 관리자 계정` },
+    const autoText = () => { const hit = matchOf(); return hit.length === 1 ? `이름이 같은 계정: ${hit[0].name}` : hit.length > 1 ? '이름이 같은 계정이 여러 개라 직접 골라 주세요' : '이름이 같은 선생님 계정 없음'; };
+    const link = el('select', { class: 'a-input tt-link', 'aria-label': `${t.name || i + 1 + '번째'} 선생님과 연결할 선생님 계정` },
       el('option', { value: '__auto', text: `자동 (${autoText()})` }),
       el('option', { value: '', text: '연결 안 함' }),
       admins.map((a) => el('option', { value: a.uid, text: `${a.name || '(이름 없음)'} (${a.email || ''})` })));
@@ -968,7 +968,7 @@ function renderSettings() {
     del.addEventListener('click', () => { draft.teachers.splice(i, 1); renderSettings(); });
     return el('li', { class: 'tt-trow' },
       el('div', { class: 'tt-trow-top' }, sw, name, color, el('span', { class: 'tt-used', text: n ? `수업 ${n}개` : '수업 없음' }), del),
-      el('div', { class: 'tt-trow-link' }, el('span', { class: 'tt-link-label', text: '관리자 계정' }), link));
+      el('div', { class: 'tt-trow-link' }, el('span', { class: 'tt-link-label', text: '선생님 계정' }), link));
   });
   const addT = el('button', { type: 'button', class: 'a-btn small', text: '+ 선생님 추가' });
   addT.addEventListener('click', () => {
@@ -997,7 +997,7 @@ function renderSettings() {
     if (new Set(next.rooms.map((r) => r.name)).size !== next.rooms.length) return message(msg, '같은 이름의 강의실이 있어요.', 'err');
     if (next.teachers.some((t) => !t.name)) return message(msg, '선생님 이름을 모두 적어 주세요.', 'err');
     ts.forEach((t) => { if (t.link !== '__auto') next.teacherAdmins[t.id] = t.link; });
-    // '자동'인 선생님은 저장하면서 이름이 같은 관리자 계정과 연결
+    // '자동'인 선생님은 저장하면서 이름이 같은 선생님 계정과 연결
     ts.forEach((t) => {
       if (t.link !== '__auto') return;
       const hit = ctx.admins.filter((a) => normName(a.name) && normName(a.name) === normName(t.name));
@@ -1020,7 +1020,7 @@ function renderSettings() {
     el('div', { class: 'tt-set-grid' },
       el('div', {}, el('h3', { text: '강의실' }), el('p', { class: 'view-note', text: '시간표의 열 순서예요. 수업이 있는 강의실은 지울 수 없어요.' }), el('ul', { class: 'tt-set-list tt-rooms' }, roomRows), addRoom),
       el('div', {}, el('h3', { text: '선생님' }),
-        el('p', { class: 'view-note', text: '시간표에 보이는 이름(풀네임)과 색이에요. 관리자 계정과 연결하면 그 선생님이 자기 수업의 정보(학생·계정 연결·클래스 연결·메모)를 고칠 수 있어요. \'자동\'은 이름이 같은 관리자 계정과 연결해요.' }),
+        el('p', { class: 'view-note', text: '시간표에 보이는 이름(풀네임)과 색이에요. 선생님 계정과 연결하면 그 선생님이 자기 수업의 정보(학생·계정 연결·클래스 연결·메모)를 고칠 수 있어요. \'자동\'은 이름이 같은 선생님 계정과 연결해요.' }),
         el('ul', { class: 'tt-set-list tt-teachers' }, tRows), addT)),
     el('div', { class: 'a-row', style: 'margin-top: 18px;' }, save, reset),
     msg);
