@@ -154,6 +154,20 @@ details.tbl-view .tbl-wrap{margin-top:10px}
 .nav-badge{margin-left:auto;min-width:22px;padding:1px 7px;border-radius:999px;background:#FF5A1F;color:#141414;font-size:12px;font-weight:700;text-align:center}
 .adm-nav button[aria-selected="true"] .nav-badge{background:#FFB400}
 .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+/* 학생 수강 과목 (켜고 끄는 단추) */
+.subj-toggles{display:inline-flex;gap:4px}
+.subj-tg{min-width:44px;min-height:34px;padding:0 8px;border:1px solid #CFCBC3;border-radius:6px;background:#FFFFFF;color:#5C5C5C;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.subj-tg:hover{border-color:#141414;color:#141414}
+.subj-tg[aria-pressed="true"].subj-ko{background:#FF5A1F;border-color:#FF5A1F;color:#141414}
+.subj-tg[aria-pressed="true"].subj-en{background:#FFB400;border-color:#FFB400;color:#141414}
+.subj-tg[aria-pressed="true"].subj-ma{background:#2563EB;border-color:#2563EB;color:#FFFFFF}
+.subj-tg:disabled{opacity:.6;cursor:wait}
+#stu-subj-alert .alert{margin-bottom:14px}
+.sf-subjects{margin:0;padding:0;border:0;min-width:0}
+.sf-subjects legend{padding:0;margin-bottom:6px;font-size:14px;font-weight:600}
+.sf-subj-row{display:flex;flex-wrap:wrap;gap:6px 16px;min-height:42px;align-items:center}
+.sf-subj-row label{display:inline-flex;align-items:center;gap:6px;font-size:15px;cursor:pointer}
+.sf-subj-row input{width:18px;height:18px;accent-color:#2563EB}
 .alert{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:14px 18px;border-radius:10px;background:#FFF4E5;border:1px solid #FFD8A8;font-size:14px;line-height:1.6}
 .mini-list{list-style:none;margin:0;padding:0}
 .mini-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:10px 0;border-top:1px solid #ECE9E3;font-size:14px}

@@ -197,9 +197,11 @@
 <input id="sl-q" class="a-input" type="search" placeholder="이름·아이디 검색" aria-label="이름 또는 아이디 검색">
 <select id="sl-grade" class="a-input" aria-label="학년"><option value="">전체 학년</option><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select>
 <select id="sl-state" class="a-input" aria-label="상태"><option value="">전체 상태</option><option value="on">사용 중</option><option value="pending">보호자 확인 대기</option><option value="off">사용 중지</option></select>
+<select id="sl-subj" class="a-input" aria-label="수강 과목"><option value="">전체 수강 과목</option><option>국어</option><option>영어</option><option>수학</option><option value="none">수강 과목 없음</option></select>
 </div>
 </div>
-<p class="view-note" style="margin-bottom: 14px;">학생은 홈페이지에서 직접 회원가입할 수 있어요. 초4~중2가 가입하면 '보호자 확인 대기'로 들어와요. 보호자께 전화로 동의를 확인한 뒤 '동의 확인'을 누르고, 동의가 확인되지 않으면 5일 안에 '삭제'해 주세요. 퇴원했거나 학원생이 아닌 회원은 '사용 중지'하면 보충 강의를 볼 수 없어요.</p>
+<p class="view-note" style="margin-bottom: 14px;">학생은 홈페이지에서 직접 회원가입할 수 있어요. 초4~중2가 가입하면 '보호자 확인 대기'로 들어와요. 보호자께 전화로 동의를 확인한 뒤 '동의 확인'을 누르고, 동의가 확인되지 않으면 5일 안에 '삭제'해 주세요. 퇴원했거나 학원생이 아닌 회원은 '사용 중지'하면 보충 강의를 볼 수 없어요. <strong>수강 과목</strong>의 국어·영어·수학을 눌러 켜고 끄면 바로 저장되고, 학생은 켜진 과목의 보충 강의만 볼 수 있어요.</p>
+<div id="stu-subj-alert"></div>
 <div id="stu-table"></div>
 </div>
 
@@ -215,6 +217,7 @@
 <div class="a-fld"><label for="sf-name">이름</label><input id="sf-name" class="a-input" type="text" required maxlength="20"></div>
 <div class="a-fld"><label for="sf-grade">학년</label><select id="sf-grade" class="a-input"><optgroup label="초등부"><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중등부"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등부"><option>고1</option><option>고2</option><option>고3</option></optgroup></select></div>
 <div class="a-fld"><label for="sf-id">아이디 <span class="hint">영문 소문자·숫자 3~20자</span></label><input id="sf-id" class="a-input" type="text" autocapitalize="none" spellcheck="false" required maxlength="20"></div>
+<fieldset class="a-fld sf-subjects"><legend>수강 과목 <span class="hint">이 과목의 보충 강의만 보여요</span></legend><div class="sf-subj-row"><label><input type="checkbox" name="sf-subj" value="국어"> 국어</label><label><input type="checkbox" name="sf-subj" value="영어"> 영어</label><label><input type="checkbox" name="sf-subj" value="수학"> 수학</label></div></fieldset>
 <div class="a-fld"><label for="sf-pw">처음 비밀번호 <span class="hint">6자 이상</span></label><div class="a-row"><input id="sf-pw" class="a-input" type="text" required minlength="6" maxlength="40"><button type="button" id="sf-gen" class="a-btn small" style="min-height: 42px;">자동</button></div></div>
 <button type="submit" class="a-btn primary" style="min-height: 42px;">계정 만들기</button>
 </form>
@@ -328,6 +331,7 @@
 <h1>보충 강의 관리</h1>
 <button type="button" class="a-btn" data-refresh="videos">새로고침</button>
 </div>
+<p class="view-note">학생은 자기 <strong>수강 과목</strong>의 보충 강의만 볼 수 있어요. 수강 과목은 학생 관리 → 학생 목록에서 학생마다 정해요.</p>
 <div class="card">
 <div class="card-head"><h2>보충 강의 등록</h2><span class="card-sub">유튜브에 '일부 공개'로 올린 뒤 주소를 붙여 넣으세요</span></div>
 <form id="vid-form" class="a-form" novalidate>

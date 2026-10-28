@@ -3,7 +3,7 @@
 import * as be from './backend.js';
 import { loadTimetable, classLessons } from './admin-timetable.js';
 import {
-  GRADES_ALL, SUBJECTS, SUBJECT_CLASS, APPLY_GRADES, APPLY_TIMES, ID_RE, CLASS_SUBJECTS, SPECIAL_MAX,
+  GRADES_ALL, SUBJECTS, SUBJECT_CLASS, subjectsOf, APPLY_GRADES, APPLY_TIMES, ID_RE, CLASS_SUBJECTS, SPECIAL_MAX,
   STAMP_MAX_DEFAULT, STAMP_MAX_LIMIT, stampMaxOf, STAMP_RULES_MAX, STAMP_RULE_LEN, PRIZE_LEN, DEFAULT_SUB_EMAIL,
   youtubeId, thumbUrl, formatDate, formatDateTime, todayString, monthKey, dueInfo, el, friendlyError
 } from './common.js';
@@ -672,15 +672,17 @@ $('#stu-form').addEventListener('submit', async (e) => {
   const grade = $('#sf-grade').value;
   const loginId = be.normalizeLoginId($('#sf-id').value);
   const pw = $('#sf-pw').value;
+  const subjects = [...document.querySelectorAll('input[name="sf-subj"]:checked')].map((c) => c.value);
   if (!name) return message(msg, '학생 이름을 입력해 주세요.', 'err');
   if (!ID_RE.test(loginId)) return message(msg, '아이디는 영문 소문자와 숫자로 3~20자로 정해 주세요.', 'err');
   if (pw.length < 6) return message(msg, '처음 비밀번호는 6자 이상이어야 해요.', 'err');
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    await be.createStudent({ loginId, password: pw, name, grade });
-    message(msg, `${name}(${grade}) 학생 계정을 만들었어요. 아이디 ${loginId} · 처음 비밀번호 ${pw} — 학생에게 알려 주시고, 로그인 후 비밀번호를 바꾸도록 안내해 주세요.`, 'ok');
+    await be.createStudent({ loginId, password: pw, name, grade, subjects });
+    message(msg, `${name}(${grade}) 학생 계정을 만들었어요. 아이디 ${loginId} · 처음 비밀번호 ${pw} · 수강 과목 ${subjects.length ? subjects.join('·') : '없음(보충 강의가 보이지 않아요)'} — 학생에게 알려 주시고, 로그인 후 비밀번호를 바꾸도록 안내해 주세요.`, 'ok');
     $('#sf-name').value = ''; $('#sf-id').value = ''; $('#sf-pw').value = '';
+    document.querySelectorAll('input[name="sf-subj"]').forEach((c) => { c.checked = false; });
     await loadView('students', true);
   } catch (err) {
     message(msg, friendlyError(err), 'err');
@@ -689,7 +691,7 @@ $('#stu-form').addEventListener('submit', async (e) => {
   }
 });
 
-['#sl-q', '#sl-grade', '#sl-state'].forEach((s) => $(s).addEventListener('input', renderStudents));
+['#sl-q', '#sl-grade', '#sl-state', '#sl-subj'].forEach((s) => $(s).addEventListener('input', renderStudents));
 $('#lg-range').addEventListener('change', renderLoginStats);
 
 function kpiPeople(label, n) { return kpi(label, n, '명'); }
@@ -710,15 +712,19 @@ function renderStudents() {
   const q = $('#sl-q').value.trim().toLowerCase();
   const g = $('#sl-grade').value;
   const st = $('#sl-state').value;
+  const sj = $('#sl-subj').value;
+  const subjOf = (s) => subjectsOf(s);
   const rows = list
     .filter((s) => (!q || String(s.name || '').toLowerCase().includes(q) || String(s.loginId || '').includes(q))
       && (!g || s.grade === g)
-      && (!st || (st === 'on' ? s.active : st === 'pending' ? s.guardianStatus === 'pending' : (!s.active && s.guardianStatus !== 'pending'))))
+      && (!st || (st === 'on' ? s.active : st === 'pending' ? s.guardianStatus === 'pending' : (!s.active && s.guardianStatus !== 'pending')))
+      && (!sj || (sj === 'none' ? !subjOf(s).length : subjOf(s).includes(sj))))
     .sort((a, b) => GRADES_ALL.indexOf(a.grade) - GRADES_ALL.indexOf(b.grade) || String(a.name || '').localeCompare(String(b.name || ''), 'ko'));
   $('#stu-count').textContent = `${rows.length}명`;
+  renderSubjAlertOnly();
 
   $('#stu-table').replaceChildren(list.length
-    ? table([{ label: '이름' }, { label: '학년' }, { label: '아이디' }, { label: '가입' }, { label: '보호자' }, { label: '최근 접속' }, { label: '접속 횟수', num: true }, { label: '상태' }, { label: '관리' }],
+    ? table([{ label: '이름' }, { label: '학년' }, { label: '수강 과목' }, { label: '아이디' }, { label: '가입' }, { label: '보호자' }, { label: '최근 접속' }, { label: '접속 횟수', num: true }, { label: '상태' }, { label: '관리' }],
         rows.map(studentRow), { empty: '조건에 맞는 학생이 없어요.' })
     : el('p', { class: 'empty', text: '아직 가입한 학생이 없어요. 학생이 홈페이지에서 회원가입하면 여기에 보여요.' }));
 
@@ -726,6 +732,16 @@ function renderStudents() {
   $('#login-table').replaceChildren(logins.length
     ? table(['접속 시각', '이름', '학년', '아이디'], logins.slice(0, 300).map((l) => el('tr', {}, el('td', { text: formatDateTime(l.at) }), el('td', { text: l.name }), el('td', { text: l.grade }), el('td', { text: l.loginId }))), { maxHeight: 420 })
     : el('p', { class: 'empty', text: '아직 접속 기록이 없어요.' }));
+}
+
+// 사용 중인데 수강 과목이 없는 학생: 보충 강의가 하나도 보이지 않음
+function renderSubjAlertOnly() {
+  const noSubj = (cache.students || []).filter((s) => s.active && !subjectsOf(s).length);
+  const showNone = el('button', { type: 'button', class: 'a-btn small', text: '그 학생만 보기' });
+  showNone.addEventListener('click', () => { $('#sl-subj').value = 'none'; $('#sl-state').value = 'on'; renderStudents(); $('#sl-subj').focus(); });
+  $('#stu-subj-alert').replaceChildren(noSubj.length && $('#sl-subj').value !== 'none'
+    ? el('div', { class: 'alert', role: 'status' }, el('span', {}, el('strong', { text: `수강 과목이 정해지지 않은 학생 ${noSubj.length}명` }), ' — 이 학생들은 보충 강의를 볼 수 없어요. 수강 과목에서 국·영·수를 눌러 정해 주세요.'), showNone)
+    : '');
 }
 
 function renderLoginStats() {
@@ -778,12 +794,29 @@ function studentRow(s) {
     try { await be.updateStudent(s.uid, { grade: gradeSel.value }); s.grade = gradeSel.value; }
     catch (err) { alert(friendlyError(err)); gradeSel.value = s.grade; }
   });
+  // 수강 과목: 누를 때마다 켜고 끄고 바로 저장
+  const tgs = SUBJECTS.map((sub) => {
+    const b = el('button', { type: 'button', class: 'subj-tg subj-' + SUBJECT_CLASS[sub], 'aria-pressed': String(subjectsOf(s).includes(sub)), 'aria-label': `${s.name} 수강 과목 ${sub}`, title: `${sub} 보충 강의 보기 켜고 끄기`, text: sub.slice(0, 1) });
+    b.addEventListener('click', async () => {
+      const cur = subjectsOf(s);
+      const next = cur.includes(sub) ? cur.filter((x) => x !== sub) : SUBJECTS.filter((x) => x === sub || cur.includes(x));
+      tgs.forEach((x) => { x.disabled = true; });
+      try {
+        await be.updateStudent(s.uid, { subjects: next });
+        s.subjects = next;
+        b.setAttribute('aria-pressed', String(next.includes(sub)));
+        renderSubjAlertOnly();
+      } catch (err) { alert(friendlyError(err)); }
+      finally { tgs.forEach((x) => { x.disabled = false; }); b.focus(); }
+    });
+    return b;
+  });
   const pending = s.guardianStatus === 'pending';
   let actions;
   if (pending) {
     const ok = el('button', { type: 'button', class: 'a-btn small primary', text: '동의 확인' });
     ok.addEventListener('click', async () => {
-      if (!confirm(`${s.name} 학생의 보호자(${s.guardianName || ''}, ${s.guardianPhone || ''})께 전화로 동의를 확인하셨나요? 확인하면 바로 보충 강의를 볼 수 있어요.`)) return;
+      if (!confirm(`${s.name} 학생의 보호자(${s.guardianName || ''}, ${s.guardianPhone || ''})께 전화로 동의를 확인하셨나요? 확인하면 바로 로그인할 수 있고, 수강 과목으로 정한 과목의 보충 강의를 볼 수 있어요.`)) return;
       ok.disabled = true;
       try { await be.approveGuardian(s.uid); s.active = true; s.guardianStatus = 'confirmed'; renderStudents(); }
       catch (err) { alert(friendlyError(err)); ok.disabled = false; }
@@ -809,6 +842,7 @@ function studentRow(s) {
   return el('tr', { class: s.active || pending ? null : 'off' },
     el('td', {}, el('strong', { text: s.name })),
     el('td', {}, gradeSel),
+    el('td', {}, el('div', { class: 'subj-toggles', role: 'group', 'aria-label': `${s.name} 수강 과목` }, tgs)),
     el('td', { text: s.loginId }),
     el('td', { text: s.selfSignup ? '직접 가입' : '학원 생성' }),
     el('td', {}, s.guardianName ? [el('div', { text: s.guardianName }), el('a', { href: 'tel:' + String(s.guardianPhone || '').replace(/[^0-9+]/g, ''), text: s.guardianPhone })] : '—'),

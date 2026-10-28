@@ -11,7 +11,7 @@ import {
   collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch, arrayUnion, arrayRemove
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import { firebaseConfig, STUDENT_EMAIL_DOMAIN } from './firebase-config.js';
-import { UNDER14_GRADES, DEFAULT_SPECIALS } from './common.js';
+import { UNDER14_GRADES, DEFAULT_SPECIALS, SUBJECTS } from './common.js';
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 export const FOUNDER_SLOTS = 2; // 승인 없이 바로 선생님이 될 수 있는 인원 (처음 2명)
@@ -206,9 +206,17 @@ export function currentUid() {
 }
 
 /* ── 보충 강의 ─────────────────────────────────── */
+// 선생님: 모든 보충 강의
 export async function listVideos() {
   need();
   return rows(await getDocs(collection(db, 'videos')));
+}
+
+// 학생: 수강 과목의 보충 강의만 (보안 규칙도 수강 과목이 아닌 영상은 막음)
+export async function listMyVideos(subjects) {
+  need();
+  const lists = await Promise.all((subjects || []).map((s) => getDocs(query(collection(db, 'videos'), where('subject', '==', s)))));
+  return lists.flatMap((snap) => rows(snap));
 }
 
 export async function addVideo(v) {
@@ -250,7 +258,7 @@ export async function listStudents() {
 }
 
 // 선생님 로그인이 풀리지 않도록, 보조 연결을 잠깐 만들어 학생 계정을 생성
-export async function createStudent({ loginId, password, name, grade }) {
+export async function createStudent({ loginId, password, name, grade, subjects }) {
   need();
   const id = normalizeLoginId(loginId);
   const secondary = initializeApp(firebaseConfig, 'create-student-' + Date.now());
@@ -258,7 +266,7 @@ export async function createStudent({ loginId, password, name, grade }) {
     const secAuth = initializeAuth(secondary, { persistence: inMemoryPersistence });
     const cred = await createUserWithEmailAndPassword(secAuth, loginIdToEmail(id), password);
     await setDoc(doc(db, 'students', cred.user.uid), {
-      name, grade, loginId: id, active: true, loginCount: 0, lastLoginAt: null, createdAt: serverTimestamp()
+      name, grade, loginId: id, subjects: SUBJECTS.filter((s) => (subjects || []).includes(s)), active: true, loginCount: 0, lastLoginAt: null, createdAt: serverTimestamp()
     });
     await signOut(secAuth);
     return cred.user.uid;
@@ -274,6 +282,7 @@ export async function updateStudent(uid, fields) {
   if ('guardianStatus' in fields) allowed.guardianStatus = fields.guardianStatus;
   if ('grade' in fields) allowed.grade = fields.grade;
   if ('name' in fields) allowed.name = fields.name;
+  if ('subjects' in fields) allowed.subjects = SUBJECTS.filter((s) => (fields.subjects || []).includes(s));
   await updateDoc(doc(db, 'students', uid), allowed);
 }
 

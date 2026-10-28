@@ -70,6 +70,10 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .login-card{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:20px;padding:40px;border:1px solid #E4E1DB;border-radius:16px;background:#FFFFFF}
 .me-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:18px 24px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
 .me-grade{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:4px;background:#141414;color:#FFFFFF;font-size:13px;font-weight:700;vertical-align:1px}
+.me-info{display:flex;flex-direction:column;gap:6px}
+.me-subjects{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0;font-size:14px;color:#3D3D3D}
+.me-subjects .subj{align-self:center}
+.me-subjects .none{color:#8A4B00;font-weight:600}
 
 /* 로그인·관리 공통 입력 */
 .fld{display:flex;flex-direction:column;gap:8px}

@@ -83,7 +83,7 @@
 <!-- 학생 전용 화면 (로그인한 학생에게만 보임) -->
 <div id="v-list" hidden>
 <div class="me-bar">
-<p style="margin: 0; font-size: 16px;"><strong id="me-name"></strong> 학생 <span id="me-grade" class="me-grade"></span></p>
+<div class="me-info"><p style="margin: 0; font-size: 16px;"><strong id="me-name"></strong> 학생 <span id="me-grade" class="me-grade"></span></p><p class="me-subjects" id="me-subjects"></p></div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
 <button type="button" id="btn-pw" class="btn-line btn-sm">비밀번호 변경</button>
 <button type="button" id="btn-logout" class="btn-line btn-sm">로그아웃</button>
@@ -121,6 +121,7 @@
 <div class="pad-sm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 56px; padding: 28px 32px; border-radius: 12px; background: #F7F6F3;">
 <h2 style="margin: 0; font-size: 18px; font-weight: 700;">이용 안내</h2>
 <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.7; color: #3D3D3D;">
+<li>내 <strong>수강 과목</strong>의 보충 강의만 보여요. 수강 과목이 다르게 되어 있으면 학원에 알려 주세요.</li>
 <li>영상을 누르면 유튜브에서 열려요.</li>
 <li>보충 강의는 아벨학원 회원을 위한 자료예요. 영상 주소를 외부에 공유하지 말아 주세요.</li>
 <li>함께 쓰는 컴퓨터에서는 다 본 뒤 꼭 로그아웃해 주세요.</li>

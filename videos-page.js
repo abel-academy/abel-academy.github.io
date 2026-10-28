@@ -1,7 +1,7 @@
 // 학생 전용 페이지: 로그인한(사용 중인) 회원에게만 [보충 강의] [클래스] 두 탭을 보여 줌
 import * as be from './backend.js';
 import { logIn } from './session.js';
-import { SUBJECT_CLASS, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
+import { SUBJECT_CLASS, subjectsOf, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
 import { renderClasses } from './student-classes.js';
 
 const $ = (s) => document.querySelector(s);
@@ -96,7 +96,10 @@ function videoCard(v, id) {
   );
 }
 
-function renderPanels(videos) {
+// subjects: 학생의 수강 과목 (null이면 선생님 미리보기 — 모든 과목)
+function renderPanels(videos, subjects) {
+  const noSubjects = Array.isArray(subjects) && !subjects.length;
+  const what = subjects ? subjects.join('·') + ' ' : '';
   document.querySelectorAll('.vpanel').forEach((panel) => {
     const grade = panel.dataset.grade;
     const items = videos
@@ -111,10 +114,14 @@ function renderPanels(videos) {
       ),
       items.length
         ? el('div', { class: 'vgrid' }, items.map((x) => videoCard(x.v, x.id)))
-        : el('div', { class: 'vempty' },
-            el('p', {}, el('strong', { text: `아직 올라온 ${grade} 보충 강의가 없어요.` })),
-            el('p', { text: '영상이 올라오면 이곳에 최근 순서로 보여요.' })
-          )
+        : noSubjects
+          ? el('div', { class: 'vempty' },
+              el('p', {}, el('strong', { text: '아직 수강 과목이 정해지지 않았어요.' })),
+              el('p', { text: '선생님이 수강 과목을 정해 주면 그 과목의 보충 강의가 보여요. 궁금한 점은 학원(010-2078-7098)에 문의해 주세요.' }))
+          : el('div', { class: 'vempty' },
+              el('p', {}, el('strong', { text: `아직 올라온 ${grade} ${what}보충 강의가 없어요.` })),
+              el('p', { text: subjects ? '수강 중인 과목의 영상이 올라오면 이곳에 최근 순서로 보여요.' : '영상이 올라오면 이곳에 최근 순서로 보여요.' })
+            )
     );
   });
 }
@@ -126,9 +133,16 @@ async function showStudent(st, adminPreview) {
   $('#me-name').textContent = st.name;
   $('#me-grade').textContent = adminPreview ? '미리보기' : st.grade;
   $('#me-name').nextSibling.textContent = adminPreview ? ' ' : ' 학생 ';
+  // 수강 과목: 학생은 수강 과목의 강의만, 선생님 미리보기는 모든 과목
+  const subjects = adminPreview ? null : subjectsOf(st);
+  $('#me-subjects').replaceChildren(...(adminPreview
+    ? [el('span', { text: '미리보기 · 모든 과목의 강의가 보여요' })]
+    : subjects.length
+      ? [el('span', { text: '수강 과목' }), ...subjects.map((s) => el('span', { class: 'subj subj-' + (SUBJECT_CLASS[s] || 'etc'), text: s }))]
+      : [el('span', { class: 'none', text: '수강 과목이 아직 정해지지 않았어요' })]));
   show('status', '불러오는 중…');
-  const videos = await be.listVideos();
-  renderPanels(videos);
+  const videos = adminPreview ? await be.listVideos() : subjects.length ? await be.listMyVideos(subjects) : [];
+  renderPanels(videos, subjects);
   const mine = tabs.find((t) => t.textContent.trim() === st.grade) || tabs[0];
   selectTab(mine, false);
   show('list');

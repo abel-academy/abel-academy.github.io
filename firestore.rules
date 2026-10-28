@@ -139,8 +139,12 @@ service cloud.firestore {
 
     // ── 보충 강의 ─────────────────────────────────────────
     // 목록: 사용 중인 학생과 관리자만 열람, 관리자만 등록·삭제
+    // 보충 강의: 학생은 자기 수강 과목(students/{uid}.subjects, 선생님만 정함)의 영상만 볼 수 있음
+    function mySubjects() {
+      return me().get('subjects', []);
+    }
     match /videos/{id} {
-      allow read: if isAdmin() || isStudent();
+      allow read: if isAdmin() || (isStudent() && resource.data.subject in mySubjects());
       allow write: if isAdmin();
     }
 

@@ -6,6 +6,8 @@ export const GRADE_GROUPS = [['초등부', ['초4', '초5', '초6']], ['중등�
 // 만 14세 미만일 수 있는 학년: 가입할 때 보호자(법정대리인) 동의 확인이 필요
 export const UNDER14_GRADES = ['초4', '초5', '초6', '중1', '중2'];
 export const SUBJECTS = ['국어', '영어', '수학'];
+// 학생 수강 과목: 학생 계정마다 선생님이 정하고, 학생은 수강 과목의 보충 강의만 볼 수 있음
+export const subjectsOf = (st) => SUBJECTS.filter((s) => Array.isArray(st && st.subjects) && st.subjects.includes(s));
 export const SUBJECT_CLASS = { '국어': 'ko', '영어': 'en', '수학': 'ma' };
 export const APPLY_TYPES = ['입학 상담', '특강 신청'];
 export const APPLY_GRADES = ['초등학교 4학년', '초등학교 5학년', '초등학교 6학년', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'];
