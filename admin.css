@@ -154,6 +154,29 @@ details.tbl-view .tbl-wrap{margin-top:10px}
 .nav-badge{margin-left:auto;min-width:22px;padding:1px 7px;border-radius:999px;background:#FF5A1F;color:#141414;font-size:12px;font-weight:700;text-align:center}
 .adm-nav button[aria-selected="true"] .nav-badge{background:#FFB400}
 .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+/* 학습 보조 (게임 등록) */
+.lg-kind,.lg-grades{margin:0;padding:0;border:0;min-width:0}
+.lg-kind legend,.lg-grades legend{padding:0;margin-bottom:8px;font-size:14px;font-weight:600}
+.lg-kind-row,.lg-grade-row{display:flex;flex-wrap:wrap;gap:8px 18px}
+.lg-kind-row label,.lg-grade-row label,.lg-check{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:15px;font-weight:500;cursor:pointer}
+.lg-kind-row input,.lg-grade-row input,.lg-check input{width:18px;height:18px;accent-color:#2563EB}
+.lg-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lg-suggest{margin-bottom:16px}
+.lg-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.lg-item{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:14px 0;border-top:1px solid #ECE9E3}
+.lg-item:first-child{border-top:0}
+.lg-item.off .lg-main{opacity:.65}
+.lg-order{display:flex;gap:4px}
+.lg-main{flex:1 1 260px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.lg-main strong{font-size:16px}
+.lg-desc{font-size:13px;line-height:1.5;color:#3D3D3D;overflow-wrap:anywhere}
+.lg-meta{font-size:13px;color:#5C5C5C;overflow-wrap:anywhere}
+.lg-meta .pill{background:#F2F0EB;color:#141414}
+.lg-acts{display:flex;flex-wrap:wrap;gap:6px}
+.lg-toggle{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 12px;border:1px solid #CFCBC3;border-radius:999px;background:#FFFFFF;font-family:inherit;font-size:13px;font-weight:700;color:#5C5C5C;cursor:pointer}
+.lg-toggle-dot{width:12px;height:12px;border-radius:50%;background:#CFCBC3}
+.lg-toggle[aria-pressed="true"]{border-color:#1E8E4E;background:#E3F5EA;color:#1E5E39}
+.lg-toggle[aria-pressed="true"] .lg-toggle-dot{background:#1E8E4E}
 /* 학생 수강 과목 (켜고 끄는 단추) */
 .subj-toggles{display:inline-flex;gap:4px}
 .subj-tg{min-width:44px;min-height:34px;padding:0 8px;border:1px solid #CFCBC3;border-radius:6px;background:#FFFFFF;color:#5C5C5C;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}

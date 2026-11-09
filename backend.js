@@ -232,6 +232,41 @@ export async function deleteVideo(id) {
   await deleteDoc(doc(db, 'videos', id));
 }
 
+/* ── 학습 보조 (게임) ─────────────────────────── */
+// 선생님이 등록한 게임 목록 (학생 화면은 학년에 맞고 '보이기'인 것만 보여 줌)
+export async function listLearnGames() {
+  need();
+  return rows(await getDocs(collection(db, 'learnGames')), ['createdAt', 'updatedAt']);
+}
+
+const LEARN_KEYS = ['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order'];
+const learnFields = (g) => {
+  const v = {};
+  for (const key of LEARN_KEYS) if (key in g) v[key] = g[key];
+  if ('order' in v) v.order = Math.round(Number(v.order) || 0);
+  return v;
+};
+
+export async function addLearnGame(g) {
+  need();
+  const ref = await addDoc(collection(db, 'learnGames'), {
+    title: g.title, desc: g.desc || '', grades: g.grades || [], kind: g.kind, builtin: g.builtin || '', url: g.url || '',
+    visible: g.visible !== false, order: Math.round(Number(g.order) || 0),
+    createdAt: serverTimestamp(), createdBy: auth.currentUser.uid
+  });
+  return ref.id;
+}
+
+export async function updateLearnGame(id, fields) {
+  need();
+  await updateDoc(doc(db, 'learnGames', id), { ...learnFields(fields), updatedAt: serverTimestamp() });
+}
+
+export async function deleteLearnGame(id) {
+  need();
+  await deleteDoc(doc(db, 'learnGames', id));
+}
+
 // 학생이 보충 강의를 눌러 유튜브로 열 때 1건 기록 (시청 내역)
 export async function recordView(student, video) {
   need();

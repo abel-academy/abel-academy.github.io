@@ -148,6 +148,28 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // 학습 보조 게임: 학생·선생님이 보고, 선생님만 등록·수정·삭제
+    // (학원 게임은 정해진 것만, 다른 사이트는 https 주소만)
+    function validLearn(d) {
+      return d.keys().hasOnly(['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order', 'createdAt', 'createdBy', 'updatedAt'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 40
+        && d.desc is string && d.desc.size() <= 200
+        && d.grades is list && d.grades.size() <= 9
+        && d.kind in ['builtin', 'link']
+        && d.builtin is string && d.builtin.size() <= 20
+        && d.url is string && d.url.size() <= 300
+        && (d.kind != 'link' || d.url.matches('^https://\\S+$'))
+        && (d.kind != 'builtin' || d.builtin in ['cube-net'])
+        && d.visible is bool
+        && d.order is int;
+    }
+    match /learnGames/{id} {
+      allow read: if isAdmin() || isStudent();
+      allow create: if isAdmin() && validLearn(request.resource.data) && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdmin() && validLearn(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     // 시청 내역: 학생이 영상을 열 때 자기 기록만 추가, 관리자만 열람·삭제
     match /views/{id} {
       allow read, delete: if isAdmin();

@@ -206,6 +206,24 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
 .due{flex:none;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
 .due-today{background:#FF5A1F;color:#141414}.due-soon{background:#FFE8DC;color:#8A2E0C}.due-later{background:#E8F0FE;color:#1D4ED8}.due-past{background:#F2F0EB;color:#5C5C5C}
 
+/* 학생 전용 → 학습 보조 */
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:20px}
+.lcard{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:24px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
+.lcard-icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:#FFB400;color:#141414}
+.lcard-icon.out{background:#E8F0FE;color:#1D4ED8}
+.lcard-body{display:flex;flex-direction:column;gap:8px;width:100%}
+.lcard h3{margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em}
+.lcard-desc{margin:0;font-size:15px;line-height:1.7;color:#3D3D3D}
+.lcard-meta{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.lcard-grade,.lcard-kind{padding:3px 9px;border-radius:4px;background:#F2F0EB;font-size:13px;font-weight:700;color:#141414}
+.lcard-kind{background:#FFF4E5;color:#8A4B00}.lcard-kind.out{background:#E8F0FE;color:#1D4ED8}
+.lcard-rec{margin:0;font-size:14px;color:#5C5C5C}
+.lcard-star{color:#B45309}
+.lcard-go{display:inline-flex;align-items:center;justify-content:center;margin-top:auto;text-decoration:none}
+a.btn-sm{text-decoration:none}
+.btn-sm.btn-line{color:#141414}
+.learn-note{margin:16px 0 0;font-size:14px;line-height:1.6;color:#5C5C5C}
+
 /* 휴대폰 화면 */
 @media (max-width:640px){
   .hdr-cta{display:none!important}
@@ -220,7 +238,8 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
   .tab-grade{padding:0 12px;font-size:16px}
   .tab-gap{margin-left:8px}
   .stabs{display:flex}
-  .stab{flex:1 1 0;justify-content:center;padding:0 12px;font-size:16px}
+  .stab{flex:1 1 0;justify-content:center;gap:6px;padding:0 6px;font-size:15px;white-space:nowrap}
+  .stab svg{width:18px;height:18px}
   .cls-card{padding:20px}
   .stamp-board{gap:5px}
 }

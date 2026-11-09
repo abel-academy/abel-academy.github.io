@@ -2,6 +2,7 @@
 // 대시보드 · 상담 신청서 · 신청 통계 · 학생 관리(학생 목록·접속 통계 / 클래스·숙제·스탬프) · 시청 내역 · 보충 강의 · 공지 · 선생님(가입 승인)
 import * as be from './backend.js';
 import { loadTimetable, classLessons } from './admin-timetable.js';
+import { loadLearn } from './admin-learn.js';
 import {
   GRADES_ALL, SUBJECTS, SUBJECT_CLASS, subjectsOf, APPLY_GRADES, APPLY_TIMES, ID_RE, CLASS_SUBJECTS, SPECIAL_MAX,
   STAMP_MAX_DEFAULT, STAMP_MAX_LIMIT, stampMaxOf, STAMP_RULES_MAX, STAMP_RULE_LEN, PRIZE_LEN, DEFAULT_SUB_EMAIL,
@@ -61,7 +62,7 @@ const loading = (box) => $(box).replaceChildren(el('p', { class: 'empty', text: 
 const ensure = async (key, fn, force) => { if (force || !cache[key]) cache[key] = await fn(); return cache[key]; };
 
 async function loadView(name, force) {
-  const boxes = { timetable: '#tt-grid', home: '#home-kpis', apps: '#ap-table', stats: '#st-body', students: '#stu-table', views: '#vw-by-video', videos: '#vid-list', notices: '#nt-list', admins: '#ad-list' };
+  const boxes = { learn: '#lg-list', timetable: '#tt-grid', home: '#home-kpis', apps: '#ap-table', stats: '#st-body', students: '#stu-table', views: '#vw-by-video', videos: '#vid-list', notices: '#nt-list', admins: '#ad-list' };
   try {
     if (name === 'home') {
       loading('#home-apps');
@@ -92,6 +93,8 @@ async function loadView(name, force) {
       loading('#vw-by-video'); await ensure('views', () => be.listViews(1000), force); renderViews();
     } else if (name === 'videos') {
       loading('#vid-list'); await ensure('videos', be.listVideos, force); renderVideos();
+    } else if (name === 'learn') {
+      loading('#lg-list'); await loadLearn(force);
     } else if (name === 'notices') {
       loading('#nt-list'); await ensure('notices', () => be.listNotices(200), force); renderNotices();
     } else if (name === 'timetable') {

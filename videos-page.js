@@ -1,8 +1,9 @@
-// 학생 전용 페이지: 로그인한(사용 중인) 회원에게만 [보충 강의] [클래스] 두 탭을 보여 줌
+// 학생 전용 페이지: 로그인한(사용 중인) 회원에게만 [보충 강의] [클래스] [학습 보조] 세 탭을 보여 줌
 import * as be from './backend.js';
 import { logIn } from './session.js';
 import { SUBJECT_CLASS, subjectsOf, youtubeId, thumbUrl, formatDate, el, friendlyError } from './common.js';
 import { renderClasses } from './student-classes.js';
+import { renderLearn } from './student-learn.js';
 
 const $ = (s) => document.querySelector(s);
 const status = $('#v-status');
@@ -11,8 +12,9 @@ const listBox = $('#v-list');
 const loginForm = $('#login-form');
 const loginErr = $('#lg-error');
 let viewer = null; // 지금 보고 있는 학생 (선생님 미리보기일 때는 null)
-let shown = null;  // 화면에 띄운 학생 정보 { st, adminPreview }
+let shown = null;  // 화면에 띄운 학생 정보 { st, adminPreview, uid }
 let classLoaded = false;
+let learnLoaded = false;
 
 function show(which, message) {
   status.hidden = which !== 'status';
@@ -26,8 +28,10 @@ function setLoginError(msg) {
   loginErr.hidden = !msg;
 }
 
-/* ── 큰 탭: 보충 강의 / 클래스 ── */
+/* ── 큰 탭: 보충 강의 / 클래스 / 학습 보조 ── */
 const stabs = [...document.querySelectorAll('.stab')];
+const HASH = { videos: '', class: '#class', learn: '#learn' };
+const sectionFromHash = () => (location.hash === '#class' ? 'class' : location.hash === '#learn' ? 'learn' : 'videos');
 function selectSection(name, focus) {
   stabs.forEach((t) => {
     const on = t.id === 'stab-' + name;
@@ -36,11 +40,15 @@ function selectSection(name, focus) {
     document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
     if (on && focus) t.focus();
   });
-  const hash = name === 'class' ? '#class' : '';
+  const hash = HASH[name] || '';
   if (location.hash !== hash) history.replaceState(null, '', location.pathname + location.search + hash);
   if (name === 'class' && shown && !classLoaded) {
     classLoaded = true;
     renderClasses($('#class-box'), shown.st, shown.adminPreview);
+  }
+  if (name === 'learn' && shown && !learnLoaded) {
+    learnLoaded = true;
+    renderLearn($('#learn-box'), shown.st, shown.adminPreview, shown.uid);
   }
 }
 stabs.forEach((tab, i) => {
@@ -48,7 +56,8 @@ stabs.forEach((tab, i) => {
   tab.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();
-    selectSection(stabs[1 - i].id.replace('stab-', ''), true);
+    const next = stabs[(i + (e.key === 'ArrowRight' ? 1 : stabs.length - 1)) % stabs.length];
+    selectSection(next.id.replace('stab-', ''), true);
   });
 });
 
@@ -126,10 +135,11 @@ function renderPanels(videos, subjects) {
   });
 }
 
-async function showStudent(st, adminPreview) {
+async function showStudent(st, adminPreview, uid) {
   viewer = adminPreview ? null : st;
-  shown = { st, adminPreview: Boolean(adminPreview) };
+  shown = { st, adminPreview: Boolean(adminPreview), uid };
   classLoaded = false;
+  learnLoaded = false;
   $('#me-name').textContent = st.name;
   $('#me-grade').textContent = adminPreview ? '미리보기' : st.grade;
   $('#me-name').nextSibling.textContent = adminPreview ? ' ' : ' 학생 ';
@@ -146,7 +156,7 @@ async function showStudent(st, adminPreview) {
   const mine = tabs.find((t) => t.textContent.trim() === st.grade) || tabs[0];
   selectTab(mine, false);
   show('list');
-  selectSection(location.hash === '#class' ? 'class' : 'videos', false);
+  selectSection(sectionFromHash(), false);
 }
 
 /* ── 로그인 상태에 따라 화면 전환 ── */
@@ -160,7 +170,7 @@ if (!be.configured) {
       const st = await be.getStudent(user.uid);
       if (!st) {
         // 선생님이 로그인한 상태라면 학생 화면을 미리 볼 수 있음
-        if (await be.isAdmin(user.uid).catch(() => false)) { await showStudent({ name: '선생님', grade: '고1' }, true); return; }
+        if (await be.isAdmin(user.uid).catch(() => false)) { await showStudent({ name: '선생님', grade: '고1' }, true, 'teacher-' + user.uid); return; }
         show('login'); // 회원 정보가 막 만들어지는 중이거나 없는 계정
         return;
       }
@@ -171,7 +181,7 @@ if (!be.configured) {
           : '사용이 중지된 계정이에요. 학원에 문의해 주세요.');
         return;
       }
-      await showStudent(st);
+      await showStudent(st, false, user.uid);
     } catch (e) {
       show('status', friendlyError(e));
     }
