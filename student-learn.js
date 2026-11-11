@@ -16,10 +16,12 @@ function icon(kind) {
   svg.setAttribute('viewBox', '0 0 32 32'); svg.setAttribute('width', '30'); svg.setAttribute('height', '30'); svg.setAttribute('aria-hidden', 'true');
   const p = document.createElementNS(ns, 'path');
   p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'currentColor'); p.setAttribute('stroke-width', '2.2'); p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('stroke-linecap', 'round');
-  // 정육면체(학원 게임) / 바깥 화살표(다른 사이트)
+  // 정육면체(학원 게임) / 돋보기(명제 탐정) / 바깥 화살표(다른 사이트)
   p.setAttribute('d', kind === 'link'
     ? 'M13 7H8a2 2 0 00-2 2v15a2 2 0 002 2h15a2 2 0 002-2v-5M18 6h8v8M26 6L14 18'
-    : 'M16 4l11 6v12l-11 6-11-6V10l11-6zM5 10l11 6 11-6M16 16v12');
+    : kind === 'search'
+      ? 'M14 5a9 9 0 110 18 9 9 0 010-18zM20.5 20.5L27 27M10 14h8'
+      : 'M16 4l11 6v12l-11 6-11-6V10l11-6zM5 10l11 6 11-6M16 16v12');
   svg.append(p);
   return svg;
 }
@@ -41,7 +43,7 @@ function gameCard(g, uid) {
     action = el('a', { class: 'btn-line btn-sm lcard-go', href: g.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${g.title} 열기 (새 창, ${host})` }, '열기 ↗');
   }
   return el('article', { class: 'lcard' },
-    el('span', { class: 'lcard-icon ' + (b ? 'in' : 'out') }, icon(b ? 'builtin' : 'link')),
+    el('span', { class: 'lcard-icon ' + (b ? 'in' : 'out') }, icon(b ? b.icon || 'builtin' : 'link')),
     el('div', { class: 'lcard-body' },
       el('h3', { text: g.title }),
       g.desc ? el('p', { class: 'lcard-desc', text: g.desc }) : null,

@@ -118,7 +118,8 @@ async function add(g) {
 
 /* ── 등록 양식 ── */
 const kindNow = () => document.querySelector('input[name="lg-kind"]:checked').value;
-let autoFilled = '';
+let autoFilled = '', autoDesc = '', autoGrades = '';
+const checkedGrades = () => [...document.querySelectorAll('input[name="lg-grade"]:checked')].map((c) => c.value).join(',');
 function syncKind() {
   const k = kindNow();
   $('#lg-builtin-fld').hidden = k !== 'builtin';
@@ -128,10 +129,11 @@ function syncKind() {
 function fillBuiltin() {
   const b = LEARN_BUILTINS.find((x) => x.id === $('#lg-builtin').value);
   if (!b) return;
-  // 비어 있거나 전에 자동으로 넣은 글자일 때만 채움
+  // 비어 있거나 전에 자동으로 넣은 값 그대로일 때만 바꿈 (선생님이 고친 값은 그대로 둠)
   if (!$('#lg-title').value.trim() || $('#lg-title').value === autoFilled) { $('#lg-title').value = b.title; autoFilled = b.title; }
-  if (!$('#lg-desc').value.trim()) $('#lg-desc').value = b.desc;
-  if (!document.querySelector('input[name="lg-grade"]:checked')) setGrades(b.grades);
+  if (!$('#lg-desc').value.trim() || $('#lg-desc').value === autoDesc) { $('#lg-desc').value = b.desc; autoDesc = b.desc; }
+  const cur = checkedGrades();
+  if (!cur || cur === autoGrades) { setGrades(b.grades); autoGrades = checkedGrades(); }
 }
 function setGrades(list) {
   document.querySelectorAll('input[name="lg-grade"]').forEach((c) => { c.checked = list.includes(c.value); });
@@ -174,7 +176,7 @@ $('#lg-form').addEventListener('submit', async (e) => {
     await add({ kind, builtin, url, title, desc, grades, visible });
     message(msg, `'${title}'을(를) 등록했어요. ${visible ? `${gradeText(grades)} 학생의 학습 보조 탭에 보여요.` : '지금은 숨김 상태예요.'}`, 'ok');
     $('#lg-form').reset();
-    autoFilled = '';
+    autoFilled = ''; autoDesc = ''; autoGrades = '';
     syncKind();
   } catch (err) {
     message(msg, err.code === 'app/too-many' ? `게임은 ${LEARN_MAX}개까지 등록할 수 있어요.` : friendlyError(err) + (err.code === 'permission-denied' ? ' — Firebase 보안 규칙을 새 내용으로 게시했는지 확인해 주세요.' : ''), 'err');
