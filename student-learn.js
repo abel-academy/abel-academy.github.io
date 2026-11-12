@@ -1,6 +1,6 @@
 // 학생 전용 → 학습 보조 탭: 선생님이 등록한 게임 중 내 학년에 맞는 것
 import * as be from './backend.js';
-import { el, friendlyError } from './common.js';
+import { el, friendlyError, subjectsOf } from './common.js';
 import { LEARN_BUILTINS } from './learn-games.js';
 import { loadRecord, totalStars } from './learn-records.js';
 
@@ -21,7 +21,9 @@ function icon(kind) {
     ? 'M13 7H8a2 2 0 00-2 2v15a2 2 0 002 2h15a2 2 0 002-2v-5M18 6h8v8M26 6L14 18'
     : kind === 'search'
       ? 'M14 5a9 9 0 110 18 9 9 0 010-18zM20.5 20.5L27 27M10 14h8'
-      : 'M16 4l11 6v12l-11 6-11-6V10l11-6zM5 10l11 6 11-6M16 16v12');
+      : kind === 'train'
+        ? 'M8 5h16a3 3 0 013 3v11a3 3 0 01-3 3H8a3 3 0 01-3-3V8a3 3 0 013-3zM5 13h22M11 22l-3 5M21 22l3 5M10 17.5h.01M22 17.5h.01'
+        : 'M16 4l11 6v12l-11 6-11-6V10l11-6zM5 10l11 6 11-6M16 16v12');
   svg.append(p);
   return svg;
 }
@@ -47,7 +49,7 @@ function gameCard(g, uid) {
     el('div', { class: 'lcard-body' },
       el('h3', { text: g.title }),
       g.desc ? el('p', { class: 'lcard-desc', text: g.desc }) : null,
-      el('p', { class: 'lcard-meta' }, el('span', { class: 'lcard-grade', text: grades }), b ? el('span', { class: 'lcard-kind', text: '학원 게임' }) : el('span', { class: 'lcard-kind out', text: '링크' })),
+      el('p', { class: 'lcard-meta' }, el('span', { class: 'lcard-grade', text: grades }), g.subject ? el('span', { class: 'lcard-grade', text: g.subject }) : null, b ? el('span', { class: 'lcard-kind', text: '학원 게임' }) : el('span', { class: 'lcard-kind out', text: '링크' })),
       extra),
     action);
 }
@@ -68,6 +70,7 @@ export async function renderLearn(box, st, adminPreview, uid) {
   const mine = list
     .filter((g) => g.visible !== false)
     .filter((g) => adminPreview || !Array.isArray(g.grades) || !g.grades.length || g.grades.includes(st.grade))
+    .filter((g) => adminPreview || !g.subject || subjectsOf(st).includes(g.subject)) // 과목을 정한 게임은 그 과목 수강생에게만
     .filter((g) => (g.kind === 'link' ? /^https:\/\//.test(g.url || '') : Boolean(builtinOf(g))))
     .sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.title).localeCompare(String(b.title), 'ko'));
   const head = el('div', { class: 'vhead' },

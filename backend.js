@@ -239,7 +239,7 @@ export async function listLearnGames() {
   return rows(await getDocs(collection(db, 'learnGames')), ['createdAt', 'updatedAt']);
 }
 
-const LEARN_KEYS = ['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order'];
+const LEARN_KEYS = ['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order', 'subject'];
 const learnFields = (g) => {
   const v = {};
   for (const key of LEARN_KEYS) if (key in g) v[key] = g[key];
@@ -252,6 +252,7 @@ export async function addLearnGame(g) {
   const ref = await addDoc(collection(db, 'learnGames'), {
     title: g.title, desc: g.desc || '', grades: g.grades || [], kind: g.kind, builtin: g.builtin || '', url: g.url || '',
     visible: g.visible !== false, order: Math.round(Number(g.order) || 0),
+    ...(g.subject ? { subject: g.subject } : {}), // 과목: 고르면 그 과목 수강생에게만 보여요
     createdAt: serverTimestamp(), createdBy: auth.currentUser.uid
   });
   return ref.id;

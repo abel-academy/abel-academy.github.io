@@ -360,7 +360,7 @@
 <h1>학습 보조</h1>
 <button type="button" class="a-btn" data-refresh="learn">새로고침</button>
 </div>
-<p class="view-note">학생 전용 → <strong>학습 보조</strong> 탭에 보이는 게임이에요. 보여 줄 학년을 고르면 그 학년 학생에게만 보여요. 학원 게임의 연습 기록(별)은 학생 기기의 브라우저에만 저장돼요.</p>
+<p class="view-note">학생 전용 → <strong>학습 보조</strong> 탭에 보이는 게임이에요. 보여 줄 학년을 고르면 그 학년 학생에게만, 과목을 고르면 그 과목을 수강하는 학생에게만 보여요. 학원 게임의 연습 기록(별)은 학생 기기의 브라우저에만 저장돼요.</p>
 <div id="lg-suggest"></div>
 <div class="card">
 <div class="card-head"><h2>게임 등록</h2><span class="card-sub">학원 게임 또는 다른 사이트 링크</span></div>
@@ -376,6 +376,7 @@
 <div class="lg-grade-row"><label><input type="checkbox" name="lg-grade" value="초4"> 초4</label><label><input type="checkbox" name="lg-grade" value="초5"> 초5</label><label><input type="checkbox" name="lg-grade" value="초6"> 초6</label><label><input type="checkbox" name="lg-grade" value="중1"> 중1</label><label><input type="checkbox" name="lg-grade" value="중2"> 중2</label><label><input type="checkbox" name="lg-grade" value="중3"> 중3</label><label><input type="checkbox" name="lg-grade" value="고1"> 고1</label><label><input type="checkbox" name="lg-grade" value="고2"> 고2</label><label><input type="checkbox" name="lg-grade" value="고3"> 고3</label></div>
 <div class="lg-quick"><button type="button" class="a-btn small" data-gq="초등부">초등부</button><button type="button" class="a-btn small" data-gq="중등부">중등부</button><button type="button" class="a-btn small" data-gq="고등부">고등부</button><button type="button" class="a-btn small" data-gq="">모두 지우기</button></div>
 </fieldset>
+<div class="a-fld span-2"><label for="lg-subject">과목 <span class="hint">고르면 그 과목을 수강하는 학생에게만 보여요</span></label><select id="lg-subject" class="a-input"><option value="">모든 과목 (과목 상관없이)</option><option value="국어">국어</option><option value="영어">영어</option><option value="수학">수학</option></select></div>
 <div class="a-fld span-all"><label class="lg-check"><input type="checkbox" id="lg-visible" checked> 등록하면 학생에게 바로 보이기</label></div>
 <div class="span-all"><button type="submit" class="a-btn primary" style="min-height: 42px;">등록하기</button></div>
 </form>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>that 연결 기차 | 아벨학원</title>
+<meta name="description" content="아벨학원 학생 전용 학습 보조: 초6 영어 접속사 that을 혼자 단계별로 연습하는 게임">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="game-prop.css">
+<link rel="stylesheet" href="game-that.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+
+<header style="background: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px;">
+<a href="index.html" aria-label="아벨학원 홈으로" style="display: flex; align-items: center; gap: 12px; padding: 4px 0; text-decoration: none;">
+<img src="logo-mark.png" alt="" width="333" height="176" style="display: block; height: 44px; width: auto;">
+<span style="font-size: 20px; font-weight: 700; color: #141414; letter-spacing: -0.02em;">아벨학원</span>
+</a>
+<nav class="nav" aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 32px; font-size: 16px; font-weight: 500;">
+<a href="index.html" style="padding: 12px 0;">홈</a>
+<a href="about.html" style="padding: 12px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="notices.html" style="padding: 12px 0;">공지사항</a>
+<a href="videos.html" aria-current="page" style="padding: 12px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 12px 0;">입학 상담</a>
+</nav>
+<div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
+<div id="auth-links" class="util" style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500;">
+<a href="login.html">로그인</a>
+<span class="util-sep" aria-hidden="true"></span>
+<a href="signup.html">회원가입</a>
+</div>
+<a href="contact.html" class="btn-primary hdr-cta" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none;">상담 신청</a>
+</div>
+</div>
+<div class="brand-strip" aria-hidden="true"></div>
+</header>
+
+<main>
+<section style="background: #141414; color: #FFFFFF;">
+<div class="g-hero" style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 56px; display: flex; flex-direction: column; gap: 14px;">
+<nav class="crumb" aria-label="현재 위치" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #CFCFCF;">
+<a href="index.html">홈</a><span aria-hidden="true">/</span><a href="videos.html">학생 전용</a><span aria-hidden="true">/</span><a href="videos.html#learn">학습 보조</a><span aria-hidden="true">/</span><span>that 연결 기차</span>
+</nav>
+<h1 style="margin: 0; font-size: clamp(30px, 4vw, 44px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">that 연결 기차</h1>
+<p style="margin: 0; max-width: 680px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">두 문장을 이어 주는 접속사 that을 혼자서 차근차근 연습해요. 단어 카드로 문장 기차를 만들고, that 자리와 틀린 곳을 찾아요. 문제는 풀 때마다 새로 만들어져요.</p>
+</div>
+</section>
+
+<section aria-label="that 연결 기차" style="padding: 40px 0 96px;">
+<div style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
+<p id="g-status" class="vstatus" role="status">불러오는 중…</p>
+
+<div id="g-gate" class="login-card pad-sm" hidden>
+<h2 style="margin: 0; font-size: 24px; font-weight: 700;">로그인이 필요해요</h2>
+<p id="g-gate-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">학습 보조 게임은 로그인한 회원만 할 수 있어요.</p>
+<a class="btn-primary btn-lg g-link-btn" href="videos.html#learn">학생 전용에서 로그인하기</a>
+</div>
+
+<div id="g-app" hidden>
+<div class="g-topline">
+<a class="g-back" href="videos.html#learn">← 학습 보조로 돌아가기</a>
+<p class="g-who" id="g-who"></p>
+</div>
+
+<!-- 단계 고르기 -->
+<div id="g-menu">
+<div class="g-sum" id="g-sum"></div>
+<h2 class="g-h2">단계 고르기</h2>
+<ol class="g-stages" id="g-stages"></ol>
+<section class="pz-terms-sec" aria-labelledby="th-terms-title">
+<h2 class="g-h2" id="th-terms-title">기억해요</h2>
+<p class="g-note">문제를 풀다가 헷갈리면 여기서 다시 확인해요.</p>
+<dl class="pz-terms">
+<div class="pz-term"><dt>이어 주는 that</dt><dd>that은 두 문장을 이어 주는 연결 고리예요. <span lang="en"><span class="th-w main">I think</span> + <span class="th-w clause">she is smart</span></span> → <span lang="en"><span class="th-w main">I think</span> <span class="th-w that">that</span> <span class="th-w clause">she is smart</span>.</span> (나는 그녀가 똑똑하다고 생각해.)</dd></div>
+<div class="pz-term"><dt>that 다음은 ‘누가 + 동사’</dt><dd><span lang="en">think·know·believe·hope</span> 뒤에 that을 쓰고, 그다음에 ‘누가 + 동사’ 순서로 써요. <span lang="en">I know that <b>he can swim</b>.</span> (나는 그가 수영할 수 있다는 것을 알아.)</dd></div>
+<div class="pz-term"><dt>that은 빼도 돼요</dt><dd>이렇게 이어 주는 that은 빼고 말해도 뜻이 같아요. <span lang="en">I think (that) you are right.</span> (나는 네가 옳다고 생각해.)</dd></div>
+<div class="pz-term"><dt>가리키는 that과 달라요</dt><dd>‘저것, 저 ~’라는 that도 있어요. <span lang="en">That is my bag.</span> (저것은 내 가방이야.) <span lang="en">I like that song.</span> (나는 저 노래를 좋아해.)</dd></div>
+<div class="pz-term"><dt>s를 붙이는 동사</dt><dd>나(I)·너(you)가 아닌 한 사람이 주어이면 동사에 s를 붙여요. <span lang="en">Mina <b>thinks</b> that he <b>likes</b> cats.</span> can·will 뒤에는 s 없이 써요. <span lang="en">He can <b>swim</b>.</span></dd></div>
+</dl>
+</section>
+</div>
+
+<!-- 문제 풀기 -->
+<div id="g-play" hidden>
+<div class="g-bar">
+<div class="g-bar-top"><strong id="g-stage-name"></strong><button type="button" class="btn-line btn-sm" id="g-quit">그만하기</button></div>
+<div class="g-progress" role="progressbar" aria-label="푼 문제" aria-valuemin="0" aria-valuemax="10" id="g-progress"><span id="g-progress-fill"></span></div>
+<p class="g-counts" id="g-counts"></p>
+</div>
+<div class="g-card">
+<h2 class="g-q" id="g-q" tabindex="-1"></h2>
+<div class="pz-board" id="g-board"></div>
+<div class="g-answers" id="g-answers"></div>
+<div class="g-feedback" id="g-feedback" role="status"></div>
+<div class="pz-extra" id="g-extra" hidden></div>
+</div>
+</div>
+
+<!-- 결과 -->
+<div id="g-result" hidden>
+<div class="g-card g-result-card" id="g-result-card"></div>
+</div>
+
+<div class="g-guide pad-sm">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700;">이용 안내</h2>
+<ul>
+<li>대결이 아니라 혼자 연습하는 게임이에요. 내 최고 기록을 넘어 보세요.</li>
+<li>초6 영어 수업에서 배우는 접속사 that(‘~라고, ~라는 것을’)을 연습해요. 단어는 초등학생이 아는 쉬운 단어로 만들었어요.</li>
+<li>연습 기록(별·최고 기록)은 이 기기의 브라우저에만 저장돼요. 다른 기기에서는 새로 시작해요.</li>
+<li>틀려도 괜찮아요. 채점한 뒤 나오는 설명과 색깔로 나눈 바른 문장을 보며 다시 익혀 보세요.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer style="background: #F2F0EB; color: #3D3D3D; border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 40px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 40px;">
+<img src="logo-full.png" alt="아벨학원 입시 전문 학원" width="720" height="631" style="display: block; width: 132px; height: auto;">
+<div style="flex: 1 1 380px; font-size: 15px; line-height: 1.9;">
+<div>학원명 아벨학원 · 교습과목 국어, 영어, 수학</div>
+<div>주소 경기도 안산시 상록구 이동 광덕1로 356(네스트빌) 201호</div>
+<div>전화 <a class="flink" href="tel:01020787098">010-2078-7098</a> · 운영 시간 오후 2시 ~ 오후 10시</div>
+</div>
+<nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
+<a href="about.html" style="padding: 6px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="notices.html" style="padding: 6px 0;">공지사항</a>
+<a href="videos.html" style="padding: 6px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 6px 0;">입학 상담</a>
+</nav>
+</div>
+<div style="border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 14px; color: #5C5C5C;">
+<a href="privacy.html" class="privacy-link">개인정보 처리방침</a>
+<span class="foot-right"><span>© 2026 아벨학원. All rights reserved.</span><a href="admin.html" class="adm-link" rel="nofollow">선생님</a></span>
+</div>
+</div>
+</footer>
+
+<script type="module" src="game-that.js"></script>
+<script>
+setTimeout(function () {
+  var s = document.getElementById('g-status');
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '게임을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+}, 10000);
+</script>
+<script type="module" src="session.js"></script>
+</body>
+</html>

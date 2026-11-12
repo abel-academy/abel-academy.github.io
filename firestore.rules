@@ -151,7 +151,7 @@ service cloud.firestore {
     // 학습 보조 게임: 학생·선생님이 보고, 선생님만 등록·수정·삭제
     // (학원 게임은 정해진 것만, 다른 사이트는 https 주소만)
     function validLearn(d) {
-      return d.keys().hasOnly(['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order', 'createdAt', 'createdBy', 'updatedAt'])
+      return d.keys().hasOnly(['title', 'desc', 'grades', 'kind', 'builtin', 'url', 'visible', 'order', 'subject', 'createdAt', 'createdBy', 'updatedAt'])
         && d.title is string && d.title.size() > 0 && d.title.size() <= 40
         && d.desc is string && d.desc.size() <= 200
         && d.grades is list && d.grades.size() <= 9
@@ -159,7 +159,8 @@ service cloud.firestore {
         && d.builtin is string && d.builtin.size() <= 20
         && d.url is string && d.url.size() <= 300
         && (d.kind != 'link' || d.url.matches('^https://\\S+$'))
-        && (d.kind != 'builtin' || d.builtin in ['cube-net', 'proposition'])
+        && (d.kind != 'builtin' || d.builtin in ['cube-net', 'proposition', 'that-train'])
+        && d.get('subject', '') in ['', '국어', '영어', '수학']
         && d.visible is bool
         && d.order is int;
     }
