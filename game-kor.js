@@ -79,7 +79,12 @@ function renderMenu() {
 
 /* ── 문제 풀기 ── */
 function startStage(n) {
-  run = { stage: n, i: 0, correct: 0, streak: 0, bestStreak: 0, list: makeRound(n), q: null, answered: false, started: Date.now() };
+  // 이 기기에서 이 학생이 이미 푼 문제는 빼고 골라요 (묶음을 한 바퀴 다 풀면 다시 처음부터)
+  rec.seen = rec.seen || {};
+  const seen = new Set(rec.seen[n] || []);
+  const list = makeRound(n, PER_STAGE, Math.random, seen);
+  rec.seen[n] = [...seen];
+  run = { stage: n, i: 0, correct: 0, streak: 0, bestStreak: 0, list, seen, q: null, answered: false, started: Date.now() };
   screen('play');
   nextQuestion();
 }
@@ -88,6 +93,10 @@ function nextQuestion() {
   run.i += 1;
   run.answered = false;
   run.sel = {};
+  // 보여 준 문제는 '푼 문제'로 기억 (그만해도 이미 본 문제는 다음에 덜 나와요)
+  run.seen.add(run.q.key);
+  rec.seen[run.stage] = [...run.seen];
+  saveRecord(GAME, uid, rec);
   if (TEST) window.__korQ = run.q;
   renderQuestion();
   $('#g-q').focus();

@@ -340,12 +340,29 @@ export function buildQuestion(stage, item, r = Math.random) {
 
 export const BANKS = { 1: SOUND, 2: WORDS, 3: [...ANTS, ...POLYS], 4: PAIRS, 5: SENTS, 6: [...HONS, ...TENSES, ...VPAIRS], 7: OLDS };
 // 한 판(10문제): 문제 묶음을 섞어 겹치지 않게 뽑아요. 3·6단계는 종류가 고르게 섞이게 해요.
-export function makeRound(stage, n = 10, r = Math.random) {
+// 문항마다 바뀌지 않는 이름 (이미 푼 문제를 기억할 때 씀)
+export function itemKey(stage, it) {
+  const k = it.w ? it.w + (it.s ? '|' + it.s[1] : '') : it.a ? (Array.isArray(it.a) ? it.a[0] : `${it.a}|${it.b}`) : it.s ? it.s : `${it.p}|${it.ask}|${it.hl}`;
+  return `${stage}:${k}`;
+}
+// 묶음(list)에서 k개 고르기: 아직 안 푼 문제부터. 안 푼 문제가 모자라면 그 묶음은 한 바퀴를 다 돈 것이라
+// 기억을 지우고(새 바퀴) 이번 판에 나오지 않은 문제로 채워요. seen은 이미 푼 문제 이름의 Set(바뀜).
+function pickFrom(stage, list, k, seen, r) {
+  const key = (it) => itemKey(stage, it);
+  const fresh = shuffle(list.filter((it) => !seen.has(key(it))), r);
+  if (fresh.length >= k) return fresh.slice(0, k);
+  const rest = shuffle(list.filter((it) => seen.has(key(it))), r).slice(0, k - fresh.length);
+  list.forEach((it) => seen.delete(key(it)));
+  return [...fresh, ...rest];
+}
+// 한 판(10문제): 같은 판 안에서는 겹치지 않고, 묶음을 한 바퀴 다 풀기 전에는 전에 푼 문제가 다시 나오지 않아요.
+// 3·6단계는 종류가 고르게 섞이게 종류마다 따로 골라요.
+export function makeRound(stage, n = 10, r = Math.random, seen = new Set()) {
   let pool;
-  if (stage === 3) pool = [...shuffle(ANTS, r).slice(0, 4), ...shuffle(POLYS, r).slice(0, 6)];
-  else if (stage === 6) pool = [...shuffle(HONS, r).slice(0, 4), ...shuffle(TENSES, r).slice(0, 3), ...shuffle(VPAIRS, r).slice(0, 3)];
-  else pool = shuffle(BANKS[stage], r).slice(0, n);
-  return shuffle(pool, r).slice(0, n).map((it) => buildQuestion(stage, it, r));
+  if (stage === 3) pool = [...pickFrom(3, ANTS, 4, seen, r), ...pickFrom(3, POLYS, 6, seen, r)];
+  else if (stage === 6) pool = [...pickFrom(6, HONS, 4, seen, r), ...pickFrom(6, TENSES, 3, seen, r), ...pickFrom(6, VPAIRS, 3, seen, r)];
+  else pool = pickFrom(stage, BANKS[stage], n, seen, r);
+  return shuffle(pool, r).slice(0, n).map((it) => ({ ...buildQuestion(stage, it, r), key: itemKey(stage, it) }));
 }
 // 채점: 고른 값(sel)과 정답 비교
 export function partRight(part, sel) {
