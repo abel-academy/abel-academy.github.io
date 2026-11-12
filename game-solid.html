@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>입체 공방 | 아벨학원</title>
+<meta name="description" content="아벨학원 학생 전용 학습 보조: 중학교 1학년 원기둥·원뿔·구(회전체, 겉넓이와 부피)를 혼자 단계별로 연습하는 게임">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="game-prop.css">
+<link rel="stylesheet" href="game-kor.css">
+<link rel="stylesheet" href="game-solid.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+
+<header style="background: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px;">
+<a href="index.html" aria-label="아벨학원 홈으로" style="display: flex; align-items: center; gap: 12px; padding: 4px 0; text-decoration: none;">
+<img src="logo-mark.png" alt="" width="333" height="176" style="display: block; height: 44px; width: auto;">
+<span style="font-size: 20px; font-weight: 700; color: #141414; letter-spacing: -0.02em;">아벨학원</span>
+</a>
+<nav class="nav" aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 32px; font-size: 16px; font-weight: 500;">
+<a href="index.html" style="padding: 12px 0;">홈</a>
+<a href="about.html" style="padding: 12px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="notices.html" style="padding: 12px 0;">공지사항</a>
+<a href="videos.html" aria-current="page" style="padding: 12px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 12px 0;">입학 상담</a>
+</nav>
+<div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
+<div id="auth-links" class="util" style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500;">
+<a href="login.html">로그인</a>
+<span class="util-sep" aria-hidden="true"></span>
+<a href="signup.html">회원가입</a>
+</div>
+<a href="contact.html" class="btn-primary hdr-cta" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none;">상담 신청</a>
+</div>
+</div>
+<div class="brand-strip" aria-hidden="true"></div>
+</header>
+
+<main>
+<section style="background: #141414; color: #FFFFFF;">
+<div class="g-hero" style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 56px; display: flex; flex-direction: column; gap: 14px;">
+<nav class="crumb" aria-label="현재 위치" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #CFCFCF;">
+<a href="index.html">홈</a><span aria-hidden="true">/</span><a href="videos.html">학생 전용</a><span aria-hidden="true">/</span><a href="videos.html#learn">학습 보조</a><span aria-hidden="true">/</span><span>입체 공방</span>
+</nav>
+<h1 style="margin: 0; font-size: clamp(30px, 4vw, 44px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">입체 공방</h1>
+<p style="margin: 0; max-width: 680px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">평면도형을 돌려 원기둥·원뿔·구를 만들고, 자르고, 펼치고, 물을 부어 보며 겉넓이와 부피를 익혀요. 7단계이고 답은 원주율을 계산하지 않고 π를 그대로 써요.</p>
+</div>
+</section>
+
+<section aria-label="입체 공방" style="padding: 40px 0 96px;">
+<div style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
+<p id="g-status" class="vstatus" role="status">불러오는 중…</p>
+
+<div id="g-gate" class="login-card pad-sm" hidden>
+<h2 style="margin: 0; font-size: 24px; font-weight: 700;">로그인이 필요해요</h2>
+<p id="g-gate-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">학습 보조 게임은 로그인한 회원만 할 수 있어요.</p>
+<a class="btn-primary btn-lg g-link-btn" href="videos.html#learn">학생 전용에서 로그인하기</a>
+</div>
+
+<div id="g-app" hidden>
+<div class="g-topline">
+<a class="g-back" href="videos.html#learn">← 학습 보조로 돌아가기</a>
+<p class="g-who" id="g-who"></p>
+</div>
+
+<!-- 단계 고르기 -->
+<div id="g-menu">
+<div class="g-sum" id="g-sum"></div>
+<h2 class="g-h2">단계 고르기</h2>
+<ol class="g-stages" id="g-stages"></ol>
+<section class="pz-terms-sec" aria-labelledby="sd-terms-title">
+<h2 class="g-h2" id="sd-terms-title">알아 두기</h2>
+<p class="g-note">문제를 풀다가 헷갈리면 여기서 다시 확인해요. r은 밑면(구)의 반지름, h는 높이, l은 모선의 길이예요.</p>
+<dl class="pz-terms">
+<div class="pz-term"><dt>회전체</dt><dd>평면도형을 한 직선(회전축)을 축으로 한 바퀴 돌려 만든 입체예요. 원기둥·원뿔·구·원뿔대가 있어요. 옆면을 만드는 선분을 <b>모선</b>이라고 해요.</dd></div>
+<div class="pz-term"><dt>회전체의 단면</dt><dd>회전축을 품은 평면으로 자르면 회전축을 대칭축으로 하는 선대칭도형이 나와요. 회전축에 수직인 평면으로 자르면 항상 <b>원</b>이 나와요.</dd></div>
+<div class="pz-term"><dt>원기둥</dt><dd>전개도의 옆면은 가로가 2πr(밑면의 둘레)인 직사각형이에요. 겉넓이 = <b>2πr² + 2πrh</b>, 부피 = <b>πr²h</b></dd></div>
+<div class="pz-term"><dt>원뿔</dt><dd>전개도의 옆면은 반지름이 l인 부채꼴이고, 호의 길이가 2πr이에요. 겉넓이 = <b>πr² + πrl</b>, 부피 = <b>⅓πr²h</b></dd></div>
+<div class="pz-term"><dt>구</dt><dd>겉넓이 = <b>4πr²</b>, 부피 = <b>⁴⁄₃πr³</b>. 반구의 겉넓이는 2πr²에 잘린 면 πr²을 더한 3πr²이에요.</dd></div>
+<div class="pz-term"><dt>1 : 2 : 3</dt><dd>구가 꼭 맞게 들어가는 원기둥(높이 2r)과 같은 밑면·높이의 원뿔의 부피는 ⅔πr³ : ⁴⁄₃πr³ : 2πr³ = <b>1 : 2 : 3</b>이에요.</dd></div>
+<div class="pz-term"><dt>π 그대로 쓰기</dt><dd>원주율은 3.14로 바꾸지 않고 π로 남겨요. 예를 들어 3 × 3 × π × 4 = <b>36π</b>, ⁴⁄₃ × π × 2³ = <b>32/3π</b>처럼 써요.</dd></div>
+</dl>
+</section>
+</div>
+
+<!-- 문제 풀기 -->
+<div id="g-play" hidden>
+<div class="g-bar">
+<div class="g-bar-top"><strong id="g-stage-name"></strong><button type="button" class="btn-line btn-sm" id="g-quit">그만하기</button></div>
+<div class="g-progress" role="progressbar" aria-label="푼 문제" aria-valuemin="0" aria-valuemax="10" id="g-progress"><span id="g-progress-fill"></span></div>
+<p class="g-counts" id="g-counts"></p>
+</div>
+<div class="g-card">
+<h2 class="g-q" id="g-q" tabindex="-1"></h2>
+<div class="pz-board" id="g-board"></div>
+<div class="g-answers" id="g-answers"></div>
+<div class="g-feedback" id="g-feedback" role="status"></div>
+<div class="pz-extra" id="g-extra" hidden></div>
+</div>
+</div>
+
+<!-- 결과 -->
+<div id="g-result" hidden>
+<div class="g-card g-result-card" id="g-result-card"></div>
+</div>
+
+<div class="g-guide pad-sm">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700;">이용 안내</h2>
+<ul>
+<li>대결이 아니라 혼자 연습하는 게임이에요. 내 최고 기록을 넘어 보세요.</li>
+<li>중학교 1학년 수학 ‘입체도형의 성질’ 가운데 회전체와 원기둥·원뿔·구의 겉넓이와 부피를 다뤄요. 숫자는 풀 때마다 새로 바뀌어요.</li>
+<li>답은 원주율을 3.14로 계산하지 않고 π를 그대로 써요. 7단계 물통 채우기는 보너스 단계예요.</li>
+<li>그림은 길이의 비율에 맞춰 그렸지만, 눈대중으로 재지 말고 적힌 길이로 계산해요.</li>
+<li>연습 기록(별·최고 기록)은 이 기기의 브라우저에만 저장돼요. 다른 기기에서는 새로 시작해요.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer style="background: #F2F0EB; color: #3D3D3D; border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 40px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 40px;">
+<img src="logo-full.png" alt="아벨학원 입시 전문 학원" width="720" height="631" style="display: block; width: 132px; height: auto;">
+<div style="flex: 1 1 380px; font-size: 15px; line-height: 1.9;">
+<div>학원명 아벨학원 · 교습과목 국어, 영어, 수학</div>
+<div>주소 경기도 안산시 상록구 이동 광덕1로 356(네스트빌) 201호</div>
+<div>전화 <a class="flink" href="tel:01020787098">010-2078-7098</a> · 운영 시간 오후 2시 ~ 오후 10시</div>
+</div>
+<nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
+<a href="about.html" style="padding: 6px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="notices.html" style="padding: 6px 0;">공지사항</a>
+<a href="videos.html" style="padding: 6px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 6px 0;">입학 상담</a>
+</nav>
+</div>
+<div style="border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 14px; color: #5C5C5C;">
+<a href="privacy.html" class="privacy-link">개인정보 처리방침</a>
+<span class="foot-right"><span>© 2026 아벨학원. All rights reserved.</span><a href="admin.html" class="adm-link" rel="nofollow">선생님</a></span>
+</div>
+</div>
+</footer>
+
+<script type="module" src="game-solid.js"></script>
+<script>
+setTimeout(function () {
+  var s = document.getElementById('g-status');
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '게임을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+}, 10000);
+</script>
+<script type="module" src="session.js"></script>
+</body>
+</html>

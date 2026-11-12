@@ -1,0 +1,87 @@
+/* 학습 보조 게임: 입체 공방 (game.css · game-prop.css · game-kor.css의 물음 상자 위에 덧붙임) */
+/* 문제 위쪽 그림 */
+.sd-board{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 20px;width:100%;max-width:720px;padding:16px 14px;border-radius:14px;background:#F2F6FE;border:1px solid #C9D9FA}
+.sd-cap{flex:1 1 100%;margin:0;font-size:15px;font-weight:600;line-height:1.6;color:#1D3F8F;text-align:center;word-break:keep-all}
+.sd-mini{flex:none;width:140px}
+.sd-pour{display:flex;align-items:center;justify-content:center;gap:4px;width:100%}
+.sd-pour .sd-svg{flex:1 1 0;min-width:0;max-width:220px}
+.sd-pour .lt{font-size:16px}
+.sd-arrow{flex:none;font-size:32px;font-weight:800;color:#2563EB}
+.sd-key{display:inline-block;padding:1px 8px;border-radius:999px;font-size:13px;font-weight:700;color:#FFFFFF}
+.sd-key.ball{background:#C2410C}.sd-key.cone{background:#6D28D9}
+
+/* 입체 그림 (SVG) */
+.sd-svg{display:block;width:100%;max-width:320px;height:auto;overflow:visible}
+.sf{fill:#DCE8FD}.sf.top{fill:#C4D8FB}.sf.ball{fill:#DCE8FD}.sf.hole{fill:#FFFFFF}
+.se{fill:none;stroke:#141414;stroke-width:2;stroke-linejoin:round}.se.thin{stroke-width:1.2;opacity:.55}
+.sh{fill:none;stroke:#6B7280;stroke-width:1.5;stroke-dasharray:5 4}
+.sh.ax{stroke:#9CA3AF}
+.sh.in{stroke:#2563EB;stroke-width:2}
+.sh.in.ball{stroke:#C2410C}.sh.in.cone{stroke:#6D28D9}
+.cutp{fill:rgba(37,99,235,.20);stroke:#2563EB;stroke-width:1.5}
+.lr{stroke:#141414;stroke-width:1.5}.ld{fill:#141414}
+.lh{stroke:#5C5C5C;stroke-width:1.2}
+.lsl{stroke:#2563EB;stroke-width:3;stroke-linecap:round}
+.lt{font-family:inherit;font-size:14px;font-weight:700;fill:#141414;paint-order:stroke;stroke:#FFFFFF;stroke-width:4px;stroke-linejoin:round}
+.lt.mid{text-anchor:middle}.lt.end{text-anchor:end}
+.lt.q{fill:#2563EB;font-size:15px}
+
+/* 평면도형과 회전축 */
+.sd-fig{display:block;width:auto;max-width:100%;height:auto;max-height:240px;overflow:visible}
+.sd-fig.small{max-height:96px;max-width:100px}
+.ax{stroke:#B42318;stroke-width:2;stroke-dasharray:6 4}
+.fg{fill:#FFE7A3;stroke:#141414;stroke-width:2;stroke-linejoin:round}
+.sd-figs{display:flex;flex-wrap:wrap;gap:10px}
+.sd-figbtn{display:inline-flex;align-items:center;justify-content:center;width:120px;height:116px;padding:8px;border:2px solid #CFCBC3;border-radius:12px;background:#FFFFFF;cursor:pointer}
+.sd-figbtn:hover:not(:disabled){border-color:#141414}
+.sd-figbtn[aria-pressed="true"]{border-color:#2563EB;background:#E8F0FE}
+.sd-figbtn:disabled{cursor:default;opacity:1}
+.sd-figbtn.is-right{border-color:#1E8E4E;background:#C9EDD6}
+.sd-figbtn.is-wrong{border-color:#B42318;background:#FDE2DE}
+.sd-figbtn.is-answer{border-color:#1E8E4E;border-style:dashed}
+
+/* 단면 · 전개도 */
+.sec{fill:#FFE7A3;stroke:#141414;stroke-width:2;stroke-linejoin:round}
+.sec-hole{fill:#FFFFFF;stroke:#141414;stroke-width:2}
+.sec-svg{max-width:260px}
+.net-svg{max-width:340px}
+.nf{fill:#FFFFFF;stroke:#141414;stroke-width:2;stroke-linejoin:round}
+.nf.ask,.nf.ask-arc{fill:#DCE8FD}
+.arc-hl{fill:none;stroke:#2563EB;stroke-width:5;stroke-linecap:round}
+.ang{fill:none;stroke:#141414;stroke-width:1.5}
+
+/* 정답 뒤: 돌려 보기 · 단면 · 물 붓기 */
+.sd-after{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;padding:14px;border-radius:14px;background:#FFFFFF;border:1px solid #E4E1DB}
+.sd-after .kg-cap{color:#1D3F8F}
+.sd-after-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:12px 28px}
+.sd-after-row .sd-svg{max-width:200px}
+.sd-spin-stage{position:relative;flex:none;perspective:700px;max-width:100%}
+.sd-spin-stage svg{position:absolute;left:var(--ax);bottom:15px;overflow:visible;transform-origin:0 50%}
+.sd-ghost .fg{fill:#2563EB;stroke:none;opacity:.09}
+.sd-ghost.strong .fg{opacity:.35}
+.sd-spinner{animation:sd-spin 3.2s linear infinite}
+.sd-spinner .fg{fill:#FFE7A3}
+.sd-axis{position:absolute;left:var(--ax);top:0;bottom:0;margin-left:-1px;border-left:2px dashed #B42318}
+@keyframes sd-spin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+@media (prefers-reduced-motion: reduce){.sd-spinner{animation:none}}
+.pour-svg{max-width:220px}
+.water{fill:#93C5FD;transition:y .5s ease,height .5s ease}
+.jar{fill:none;stroke:#141414;stroke-width:2}
+
+/* 분수: 32/3π → 위아래로 */
+.sd-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 1px;font-size:.82em;line-height:1.15}
+.sd-num{padding:0 3px;border-bottom:1.5px solid currentColor}
+.sd-den{padding:0 3px}
+.sd-chip{min-height:52px;font-size:17px}
+#sd-check{margin-top:6px}
+
+@media (max-width:640px){
+  .sd-board{padding:12px 8px}
+  .sd-mini{width:110px}
+  .sd-pour{gap:0}
+  .sd-pour .lt{font-size:18px}
+  .sd-arrow{font-size:24px}
+  .sd-figbtn{width:96px;height:96px}
+  .sd-fig.small{max-height:78px;max-width:80px}
+  .sd-chip{font-size:16px}
+}

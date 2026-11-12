@@ -19,7 +19,7 @@ function icon(kind) {
   svg.setAttribute('viewBox', '0 0 32 32'); svg.setAttribute('width', '30'); svg.setAttribute('height', '30'); svg.setAttribute('aria-hidden', 'true');
   const p = document.createElementNS(ns, 'path');
   p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'currentColor'); p.setAttribute('stroke-width', '2.2'); p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('stroke-linecap', 'round');
-  // 정육면체(학원 게임) / 돋보기(명제 탐정) / 바깥 화살표(다른 사이트)
+  // 정육면체(학원 게임) / 돋보기(명제 탐정) / 플라스크(문법 실험실) / 기차(that 기차) / 원뿔(입체 공방) / 바깥 화살표(다른 사이트)
   p.setAttribute('d', kind === 'link'
     ? 'M13 7H8a2 2 0 00-2 2v15a2 2 0 002 2h15a2 2 0 002-2v-5M18 6h8v8M26 6L14 18'
     : kind === 'search'
@@ -28,6 +28,8 @@ function icon(kind) {
         ? 'M12 4h8M14 4v8L7 24a3 3 0 002.6 4.5h12.8A3 3 0 0025 24l-7-12V4M10 19h12'
         : kind === 'train'
         ? 'M8 5h16a3 3 0 013 3v11a3 3 0 01-3 3H8a3 3 0 01-3-3V8a3 3 0 013-3zM5 13h22M11 22l-3 5M21 22l3 5M10 17.5h.01M22 17.5h.01'
+        : kind === 'cone'
+        ? 'M16 4L6 24M16 4l10 20M6 24a10 3.5 0 0020 0a10 3.5 0 00-20 0'
         : 'M16 4l11 6v12l-11 6-11-6V10l11-6zM5 10l11 6 11-6M16 16v12');
   svg.append(p);
   return svg;
