@@ -283,6 +283,21 @@ export async function listViews(max = 1000) {
   return rows(await getDocs(query(collection(db, 'views'), orderBy('at', 'desc'), limit(max))), ['at']);
 }
 
+// 학습 보조: 학생이 한 단계를 끝까지 풀었을 때 1건 기록 (선생님만 볼 수 있음)
+export async function recordLearnPlay(student, p) {
+  need();
+  await addDoc(collection(db, 'learnPlays'), {
+    uid: student.uid, name: student.name, grade: student.grade, loginId: student.loginId,
+    game: p.game, stage: p.stage, correct: p.correct, total: p.total, sec: p.sec,
+    at: serverTimestamp()
+  });
+}
+
+export async function listLearnPlays(max = 1000) {
+  need();
+  return rows(await getDocs(query(collection(db, 'learnPlays'), orderBy('at', 'desc'), limit(max))), ['at']);
+}
+
 /* ── 학생 계정 (선생님) ─────────────────────────── */
 export async function listStudents() {
   need();

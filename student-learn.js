@@ -92,7 +92,7 @@ export async function renderLearn(box, st, adminPreview, uid) {
       adminPreview ? '선생님 화면 → 학습 보조에서 게임을 등록하고 \'학생에게 보이기\'를 켜 주세요.' : '선생님이 게임을 올리면 이곳에 보여요.'));
     return;
   }
-  const note = el('p', { class: 'learn-note', text: '혼자 연습하는 게임이에요. 학원 게임의 연습 기록(별)은 이 기기의 브라우저에만 저장돼요.' });
+  const note = el('p', { class: 'learn-note', text: '혼자 연습하는 게임이에요. 별은 이 기기의 브라우저에 저장되고, 학원 게임에서 한 단계를 끝까지 풀면 점수와 날짜가 선생님께 기록돼요.' });
   if (adminPreview) {
     box.replaceChildren(head,
       el('p', { class: 'learn-note', text: '미리보기에서는 모든 게임을 할 수 있어요. 학생은 모든 게임을 볼 수 있지만, 카드에 적힌 학년·과목에 맞는 게임만 할 수 있어요.' }),

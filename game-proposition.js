@@ -1,9 +1,10 @@
 // 학습 보조 → 명제 탐정 (고1 공통수학2 '명제'를 혼자 단련하는 게임, 대결 없음)
-// 6단계 × 10문제. 문제는 숫자와 조건을 바꿔 가며 자동으로 만들어요. 별과 최고 기록은 이 기기의 브라우저에만 저장해요.
+// 6단계 × 10문제. 문제는 숫자와 조건을 바꿔 가며 자동으로 만들어요. 별과 최고 기록은 이 기기의 브라우저에 저장하고, 끝까지 푼 판은 선생님이 볼 수 있게 학원 서버에도 기록해요(learn-log.js).
 import * as be from './backend.js';
 import { el } from './common.js';
 import { loadRecord, saveRecord, totalStars } from './learn-records.js';
 import { checkBuiltin } from './learn-access.js';
+import { setPlayer, logPlay } from './learn-log.js';
 import { makeQuestion, RELATION, inSet, subset, frac, num, hasBatchim } from './proposition.js';
 
 const $ = (s) => document.querySelector(s);
@@ -559,6 +560,7 @@ $('#g-quit').addEventListener('click', () => {
 /* ── 결과 ── */
 function finish() {
   const sec = Math.max(1, Math.round((Date.now() - run.started) / 1000));
+  logPlay(GAME, run.stage, run.correct, PER_STAGE, sec); // 선생님이 볼 수 있도록 끝까지 푼 판을 기록
   const stars = starsOf(run.correct);
   const prev = (rec.stages || {})[run.stage];
   const better = !prev || run.correct > prev.best || (run.correct === prev.best && sec < prev.time);
@@ -624,6 +626,7 @@ if (!be.configured) {
         // 선생님이 정한 학년이면서 그 과목을 수강하는 학생만 할 수 있어요 (learn-access.js)
         const res = checkBuiltin(await be.listLearnGames(), GAME, st);
         if (!res.ok) { gate(res.text, true); return; }
+        setPlayer(st);
         startApp(user.uid, `${st.name} 학생의 연습`);
         return;
       }

@@ -494,3 +494,6 @@ body.tt-dragging{-webkit-user-select:none;user-select:none;cursor:grabbing}
   .tt-block{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tt-col{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+/* 학습 보조 기록: 이름을 누르면 그 학생 기록만 */
+.ll-name{padding:0;border:0;background:none;font:inherit;font-weight:700;color:#141414;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ll-name:hover{color:#2563EB}
