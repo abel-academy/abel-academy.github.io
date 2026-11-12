@@ -48,11 +48,11 @@ function renderSuggest() {
       btn.disabled = true;
       try {
         await add({ kind: 'builtin', builtin: b.id, title: b.title, desc: b.desc, grades: [...b.grades], url: '', visible: true, ...(b.subject ? { subject: b.subject } : {}) });
-        message($('#lg-msg'), `'${b.title}'을(를) ${gradeText(b.grades)}${b.subject ? ` ${b.subject} 수강` : ''} 학생에게 보이도록 등록했어요.`, 'ok');
+        message($('#lg-msg'), `'${b.title}'을(를) 등록했어요. 모든 학생에게 보이고, ${gradeText(b.grades)}${b.subject ? ` ${b.subject} 수강` : ''} 학생이 할 수 있어요.`, 'ok');
       } catch (e) { alert(friendlyError(e)); btn.disabled = false; }
     });
     return el('div', { class: 'alert lg-suggest', role: 'status' },
-      el('span', {}, el('strong', { text: `추천: ${b.title}` }), ` — ${gradeText(b.grades)}(${b.grades.join('·')})${b.subject ? ` ${b.subject} 수강` : ''} 학생에게 보여 줄 수 있어요.`),
+      el('span', {}, el('strong', { text: `추천: ${b.title}` }), ` — ${gradeText(b.grades)}(${b.grades.join('·')})${b.subject ? ` ${b.subject} 수강` : ''} 학생이 할 수 있게 등록할 수 있어요.`),
       btn);
   }));
 }
@@ -88,7 +88,7 @@ function row(g, i, list) {
       await be.updateLearnGame(g.id, { subject: subj.value });
       g.subject = subj.value;
       render();
-      message($('#lg-msg'), `'${g.title}'은(는) 이제 ${subj.value ? `${subj.value} 수강생에게만` : '과목과 상관없이'} 보여요.`, 'ok');
+      message($('#lg-msg'), `'${g.title}'은(는) 이제 ${subj.value ? `${subj.value} 수강생만` : '과목과 상관없이'} 할 수 있어요.`, 'ok');
       $(`[aria-label="${CSS.escape(g.title)} 과목"]`)?.focus();
     } catch (e) { alert(friendlyError(e) + (e.code === 'permission-denied' ? ' — Firebase 보안 규칙을 새 내용으로 게시했는지 확인해 주세요.' : '')); subj.value = g.subject || ''; subj.disabled = false; }
   });
@@ -195,7 +195,7 @@ $('#lg-form').addEventListener('submit', async (e) => {
   btn.disabled = true;
   try {
     await add({ kind, builtin, url, title, desc, grades, visible, ...(subject ? { subject } : {}) });
-    message(msg, `'${title}'을(를) 등록했어요. ${visible ? `${gradeText(grades)}${subject ? ` ${subject} 수강` : ''} 학생의 학습 보조 탭에 보여요.` : '지금은 숨김 상태예요.'}`, 'ok');
+    message(msg, `'${title}'을(를) 등록했어요. ${visible ? `모든 학생에게 보이고, ${gradeText(grades)}${subject ? ` ${subject} 수강` : ''} 학생이 할 수 있어요.` : '지금은 숨김 상태예요.'}`, 'ok');
     $('#lg-form').reset();
     autoFilled = ''; autoDesc = ''; autoGrades = ''; autoSubject = '';
     syncKind();

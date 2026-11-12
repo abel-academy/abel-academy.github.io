@@ -211,6 +211,7 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
 .lcard{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:24px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
 .lcard-icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:#FFB400;color:#141414}
 .lcard-icon.out{background:#E8F0FE;color:#1D4ED8}
+.lcard-icon.s-ko{background:#FF5A1F;color:#141414}.lcard-icon.s-en{background:#FFB400;color:#141414}.lcard-icon.s-ma{background:#2563EB;color:#FFFFFF}
 .lcard-body{display:flex;flex-direction:column;gap:8px;width:100%}
 .lcard h3{margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em}
 .lcard-desc{margin:0;font-size:15px;line-height:1.7;color:#3D3D3D}
@@ -223,6 +224,15 @@ a.news-row{color:#141414;text-decoration:none}a.news-row:hover .news-title{text-
 a.btn-sm{text-decoration:none}
 .btn-sm.btn-line{color:#141414}
 .learn-note{margin:16px 0 0;font-size:14px;line-height:1.6;color:#5C5C5C}
+/* 학습 보조: 내 게임 / 다른 학년·과목 게임(잠김) */
+.learn-sub{margin:32px 0 14px;font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.vhead + .learn-sub{margin-top:4px}
+.learn-note.first{margin:0 0 14px}
+.lcard.locked{background:#FAFAF8}
+.lcard.locked .lcard-icon{opacity:.5}
+.lcard.locked h3,.lcard.locked .lcard-desc{color:#5C5C5C}
+.lcard-lock{margin:0;font-size:14px;font-weight:700;line-height:1.5;color:#8A4B00}
+.lcard-locktag{display:inline-flex;align-items:center;min-height:40px;margin-top:auto;padding:0 14px;border-radius:8px;background:#ECE9E3;color:#5C5C5C;font-size:14px;font-weight:700}
 
 /* 휴대폰 화면 */
 @media (max-width:640px){

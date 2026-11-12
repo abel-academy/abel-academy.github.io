@@ -3,6 +3,7 @@
 import * as be from './backend.js';
 import { el } from './common.js';
 import { loadRecord, saveRecord, totalStars } from './learn-records.js';
+import { checkBuiltin } from './learn-access.js';
 import { makeQuestion } from './english-that.js';
 
 const $ = (s) => document.querySelector(s);
@@ -369,8 +370,12 @@ function finish() {
 }
 
 /* ── 로그인 확인 ── */
-function gate(text) {
+// locked: 로그인은 했지만 내 학년·수강 과목에 맞지 않는 게임
+function gate(text, locked) {
   $('#g-gate-text').textContent = text;
+  const h = $('#g-gate h2'), a = $('#g-gate a');
+  if (h) h.textContent = locked ? '이 게임은 할 수 없어요' : '로그인이 필요해요';
+  if (a) a.textContent = locked ? '학습 보조에서 내 게임 고르기' : '학생 전용에서 로그인하기';
   show('gate');
 }
 function startApp(id, who) {
@@ -389,7 +394,13 @@ if (!be.configured) {
     if (!user) { gate('학습 보조 게임은 로그인한 회원만 할 수 있어요.'); return; }
     try {
       const st = await be.getStudent(user.uid);
-      if (st && st.active) { startApp(user.uid, `${st.name} 학생의 연습`); return; }
+      if (st && st.active) {
+        // 선생님이 정한 학년이면서 그 과목을 수강하는 학생만 할 수 있어요 (learn-access.js)
+        const res = checkBuiltin(await be.listLearnGames(), GAME, st);
+        if (!res.ok) { gate(res.text, true); return; }
+        startApp(user.uid, `${st.name} 학생의 연습`);
+        return;
+      }
       if (!st && (await be.isAdmin(user.uid).catch(() => false))) { startApp('teacher-' + user.uid, '선생님 미리보기'); return; }
       gate(st && st.guardianStatus === 'pending' ? '보호자 동의를 확인하는 중이에요. 확인이 끝나면 할 수 있어요.' : '사용할 수 없는 계정이에요. 학원에 문의해 주세요.');
     } catch (e) {

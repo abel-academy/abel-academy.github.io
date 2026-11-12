@@ -1,10 +1,13 @@
-// 학생 전용 → 학습 보조 탭: 선생님이 등록한 게임 중 내 학년에 맞는 것
+// 학생 전용 → 학습 보조 탭: 선생님이 등록한 게임 (모두 보이고, 내 학년·수강 과목에 맞는 것만 할 수 있음)
 import * as be from './backend.js';
-import { el, friendlyError, subjectsOf } from './common.js';
+import { el, friendlyError, subjectsOf, SUBJECT_CLASS } from './common.js';
 import { LEARN_BUILTINS } from './learn-games.js';
+import { canPlay, whoCanPlay } from './learn-access.js';
 import { loadRecord, totalStars } from './learn-records.js';
 
 const builtinOf = (g) => (g.kind === 'builtin' ? LEARN_BUILTINS.find((b) => b.id === g.builtin) : null);
+// 아이콘 색을 정할 과목: 선생님이 정한 과목, 없으면 학원 게임의 원래 과목 (국어 주황 · 영어 노랑 · 수학 파랑)
+const colorSubject = (g, b) => g.subject || (b && b.subject) || '';
 
 function hostOf(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
@@ -28,11 +31,15 @@ function icon(kind) {
   return svg;
 }
 
-function gameCard(g, uid) {
+// locked: 이 학생의 학년·수강 과목과 맞지 않아 구경만 하는 카드 / who: 선생님 미리보기에서 누가 할 수 있는지 안내
+function gameCard(g, uid, locked, who) {
   const b = builtinOf(g);
   const grades = Array.isArray(g.grades) && g.grades.length ? g.grades.join('·') : '모든 학년';
   let action, extra = null;
-  if (b) {
+  if (locked) {
+    extra = el('p', { class: 'lcard-lock' }, el('span', { 'aria-hidden': 'true', text: '🔒 ' }), whoCanPlay(g));
+    action = el('span', { class: 'lcard-locktag', text: '잠김' });
+  } else if (b) {
     const rec = loadRecord(b.id, uid);
     const stars = totalStars(rec);
     extra = el('p', { class: 'lcard-rec' }, stars
@@ -44,12 +51,13 @@ function gameCard(g, uid) {
     extra = el('p', { class: 'lcard-rec', text: `다른 사이트(${host})로 이동해요` });
     action = el('a', { class: 'btn-line btn-sm lcard-go', href: g.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${g.title} 열기 (새 창, ${host})` }, '열기 ↗');
   }
-  return el('article', { class: 'lcard' },
-    el('span', { class: 'lcard-icon ' + (b ? 'in' : 'out') }, icon(b ? b.icon || 'builtin' : 'link')),
+  return el('article', { class: 'lcard' + (locked ? ' locked' : '') },
+    el('span', { class: 'lcard-icon ' + (b ? 'in' : 'out') + (SUBJECT_CLASS[colorSubject(g, b)] ? ' s-' + SUBJECT_CLASS[colorSubject(g, b)] : '') }, icon(b ? b.icon || 'builtin' : 'link')),
     el('div', { class: 'lcard-body' },
       el('h3', { text: g.title }),
       g.desc ? el('p', { class: 'lcard-desc', text: g.desc }) : null,
-      el('p', { class: 'lcard-meta' }, el('span', { class: 'lcard-grade', text: grades }), g.subject ? el('span', { class: 'lcard-grade', text: g.subject }) : null, b ? el('span', { class: 'lcard-kind', text: '학원 게임' }) : el('span', { class: 'lcard-kind out', text: '링크' })),
+      el('p', { class: 'lcard-meta' }, el('span', { class: 'lcard-grade', text: grades }), g.subject ? el('span', { class: 'subj subj-' + (SUBJECT_CLASS[g.subject] || 'etc'), text: g.subject }) : null, b ? el('span', { class: 'lcard-kind', text: '학원 게임' }) : el('span', { class: 'lcard-kind out', text: '링크' })),
+      who ? el('p', { class: 'lcard-rec', text: whoCanPlay(g) }) : null,
       extra),
     action);
 }
@@ -58,6 +66,7 @@ function emptyBox(title, text) {
   return el('div', { class: 'vempty' }, el('p', {}, el('strong', { text: title })), el('p', { text }));
 }
 
+// 게임은 모두에게 보이고, 내 학년·수강 과목에 맞는 게임만 할 수 있어요 (규칙은 learn-access.js)
 export async function renderLearn(box, st, adminPreview, uid) {
   box.replaceChildren(el('p', { class: 'vstatus', role: 'status', text: '학습 보조 게임을 불러오는 중…' }));
   let list;
@@ -67,22 +76,33 @@ export async function renderLearn(box, st, adminPreview, uid) {
     box.replaceChildren(el('p', { class: 'vstatus', role: 'alert', text: friendlyError(e) }));
     return;
   }
-  const mine = list
+  const all = list
     .filter((g) => g.visible !== false)
-    .filter((g) => adminPreview || !Array.isArray(g.grades) || !g.grades.length || g.grades.includes(st.grade))
-    .filter((g) => adminPreview || !g.subject || subjectsOf(st).includes(g.subject)) // 과목을 정한 게임은 그 과목 수강생에게만
     .filter((g) => (g.kind === 'link' ? /^https:\/\//.test(g.url || '') : Boolean(builtinOf(g))))
     .sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.title).localeCompare(String(b.title), 'ko'));
   const head = el('div', { class: 'vhead' },
     el('h2', { text: '학습 보조' }),
-    mine.length ? el('span', { class: 'vcount', text: `게임 ${mine.length}개` }) : null);
-  if (!mine.length) {
-    box.replaceChildren(head, emptyBox(adminPreview ? '학생에게 보이는 학습 보조 게임이 없어요.' : `아직 ${st.grade} 학습 보조 게임이 없어요.`,
+    all.length ? el('span', { class: 'vcount', text: `게임 ${all.length}개` }) : null);
+  if (!all.length) {
+    box.replaceChildren(head, emptyBox(adminPreview ? '학생에게 보이는 학습 보조 게임이 없어요.' : '아직 학습 보조 게임이 없어요.',
       adminPreview ? '선생님 화면 → 학습 보조에서 게임을 등록하고 \'학생에게 보이기\'를 켜 주세요.' : '선생님이 게임을 올리면 이곳에 보여요.'));
     return;
   }
+  const note = el('p', { class: 'learn-note', text: '혼자 연습하는 게임이에요. 학원 게임의 연습 기록(별)은 이 기기의 브라우저에만 저장돼요.' });
+  if (adminPreview) {
+    box.replaceChildren(head,
+      el('p', { class: 'learn-note', text: '미리보기에서는 모든 게임을 할 수 있어요. 학생은 모든 게임을 볼 수 있지만, 카드에 적힌 학년·과목에 맞는 게임만 할 수 있어요.' }),
+      el('div', { class: 'lgrid' }, all.map((g) => gameCard(g, uid, false, true))), note);
+    return;
+  }
+  const open = all.filter((g) => canPlay(g, st)), locked = all.filter((g) => !canPlay(g, st));
   box.replaceChildren(...[head,
-    adminPreview ? el('p', { class: 'learn-note', text: '미리보기에서는 학생에게 보이는 게임이 학년과 상관없이 모두 보여요.' }) : null,
-    el('div', { class: 'lgrid' }, mine.map((g) => gameCard(g, uid))),
-    el('p', { class: 'learn-note', text: '혼자 연습하는 게임이에요. 학원 게임의 연습 기록(별)은 이 기기의 브라우저에만 저장돼요.' })].filter(Boolean));
+    el('h3', { class: 'learn-sub', text: `내가 할 수 있는 게임 ${open.length}개` }),
+    open.length
+      ? el('div', { class: 'lgrid' }, open.map((g) => gameCard(g, uid, false)))
+      : el('p', { class: 'learn-note first', text: `지금은 ${st.grade}${subjectsOf(st).length ? ` · ${subjectsOf(st).join('·')} 수강` : ''}에 맞는 게임이 없어요. 선생님이 게임을 올리면 이곳에서 할 수 있어요.` }),
+    locked.length ? el('h3', { class: 'learn-sub', text: `다른 학년·과목 게임 ${locked.length}개` }) : null,
+    locked.length ? el('p', { class: 'learn-note first', text: '구경만 할 수 있어요. 카드에 적힌 학년이면서 그 과목을 수강하는 학생이 할 수 있어요.' }) : null,
+    locked.length ? el('div', { class: 'lgrid' }, locked.map((g) => gameCard(g, uid, true))) : null,
+    note].filter(Boolean));
 }
