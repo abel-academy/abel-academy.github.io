@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>문법 실험실 | 아벨학원</title>
+<meta name="description" content="아벨학원 학생 전용 학습 보조: 고등학교 화법과 언어의 언어(문법) 단원을 혼자 단계별로 연습하는 게임">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="game-prop.css">
+<link rel="stylesheet" href="game-kor.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+
+<header style="background: #FFFFFF;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px;">
+<a href="index.html" aria-label="아벨학원 홈으로" style="display: flex; align-items: center; gap: 12px; padding: 4px 0; text-decoration: none;">
+<img src="logo-mark.png" alt="" width="333" height="176" style="display: block; height: 44px; width: auto;">
+<span style="font-size: 20px; font-weight: 700; color: #141414; letter-spacing: -0.02em;">아벨학원</span>
+</a>
+<nav class="nav" aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 32px; font-size: 16px; font-weight: 500;">
+<a href="index.html" style="padding: 12px 0;">홈</a>
+<a href="about.html" style="padding: 12px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 12px 0;">교육과정</a>
+<a href="notices.html" style="padding: 12px 0;">공지사항</a>
+<a href="videos.html" aria-current="page" style="padding: 12px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 12px 0;">입학 상담</a>
+</nav>
+<div class="hdr-right" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
+<div id="auth-links" class="util" style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500;">
+<a href="login.html">로그인</a>
+<span class="util-sep" aria-hidden="true"></span>
+<a href="signup.html">회원가입</a>
+</div>
+<a href="contact.html" class="btn-primary hdr-cta" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none;">상담 신청</a>
+</div>
+</div>
+<div class="brand-strip" aria-hidden="true"></div>
+</header>
+
+<main>
+<section style="background: #141414; color: #FFFFFF;">
+<div class="g-hero" style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 56px; display: flex; flex-direction: column; gap: 14px;">
+<nav class="crumb" aria-label="현재 위치" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #CFCFCF;">
+<a href="index.html">홈</a><span aria-hidden="true">/</span><a href="videos.html">학생 전용</a><span aria-hidden="true">/</span><a href="videos.html#learn">학습 보조</a><span aria-hidden="true">/</span><span>문법 실험실</span>
+</nav>
+<h1 style="margin: 0; font-size: clamp(30px, 4vw, 44px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em;">문법 실험실</h1>
+<p style="margin: 0; max-width: 680px; font-size: 18px; line-height: 1.75; color: #CFCFCF;">고등학교 화법과 언어의 언어 단원을 혼자서 연습해요. 음운 변동부터 단어의 짜임, 품사, 문장 구조, 문법 요소, 중세 국어까지 7단계예요. 한 문제에 물음이 여러 개라 쉽지 않아요.</p>
+</div>
+</section>
+
+<section aria-label="문법 실험실" style="padding: 40px 0 96px;">
+<div style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
+<p id="g-status" class="vstatus" role="status">불러오는 중…</p>
+
+<div id="g-gate" class="login-card pad-sm" hidden>
+<h2 style="margin: 0; font-size: 24px; font-weight: 700;">로그인이 필요해요</h2>
+<p id="g-gate-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #3D3D3D;">학습 보조 게임은 로그인한 회원만 할 수 있어요.</p>
+<a class="btn-primary btn-lg g-link-btn" href="videos.html#learn">학생 전용에서 로그인하기</a>
+</div>
+
+<div id="g-app" hidden>
+<div class="g-topline">
+<a class="g-back" href="videos.html#learn">← 학습 보조로 돌아가기</a>
+<p class="g-who" id="g-who"></p>
+</div>
+
+<!-- 단계 고르기 -->
+<div id="g-menu">
+<div class="g-sum" id="g-sum"></div>
+<h2 class="g-h2">단계 고르기</h2>
+<ol class="g-stages" id="g-stages"></ol>
+<section class="pz-terms-sec" aria-labelledby="kg-terms-title">
+<h2 class="g-h2" id="kg-terms-title">알아 두기</h2>
+<p class="g-note">문제를 풀다가 헷갈리면 여기서 다시 확인해요.</p>
+<dl class="pz-terms">
+<div class="pz-term"><dt>음운 변동과 음운의 개수</dt><dd><b>교체</b>(음절의 끝소리 규칙·비음화·유음화·구개음화·된소리되기)는 개수가 그대로, <b>탈락</b>(자음군 단순화·ㅎ 탈락)과 <b>축약</b>(거센소리되기)은 하나 줄고, <b>첨가</b>(ㄴ 첨가)는 하나 늘어요.</dd></div>
+<div class="pz-term"><dt>파생어와 합성어</dt><dd>단어를 처음 둘로 나눴을 때 접사가 나오면 파생어(헛웃음 → 헛-+웃음), 어근끼리면 합성어(코웃음 → 코+웃음)예요. 우리말 문장 배열과 같으면 통사적, 다르면 비통사적 합성어(덮밥, 늦잠)예요.</dd></div>
+<div class="pz-term"><dt>반의어 · 다의어 · 동음이의어</dt><dd>정도 반의어(길다↔짧다)는 둘 다 부정할 수 있고, 상보 반의어(살다↔죽다)는 그럴 수 없어요. 방향 반의어(가다↔오다)는 맞서는 방향이에요. 뜻이 이어지면 다의어, 소리만 같으면 동음이의어예요.</dd></div>
+<div class="pz-term"><dt>헷갈리는 품사</dt><dd>체언 뒤에 붙으면 조사(너만큼), 관형어 뒤에 띄어 쓰면 의존 명사(노력한 만큼)예요. 체언을 꾸미면 관형사(이 사람), 조사가 붙으면 대명사·수사(이는, 다섯에)예요.</dd></div>
+<div class="pz-term"><dt>안긴문장</dt><dd>명사절(-음, -기), 관형절(-은, -는, -을, -던), 부사절(-이, -게, -도록), 서술절(코가 길다), 인용절(-고, 라고)이 있어요. 관형절은 꾸밈을 받는 말이 빠진 관계 관형절과 빠진 성분이 없는 동격 관형절로 나뉘어요.</dd></div>
+<div class="pz-term"><dt>높임 · 시제 · 피동과 사동</dt><dd>주체 높임(-시-, 께서), 객체 높임(드리다, 모시다, 뵙다, 께), 상대 높임(-습니다, -어요, -어, -다)이 있어요. 절대 시제는 말하는 지금, 상대 시제는 안은문장의 사건이 기준이에요. 남의 동작을 당하면 피동, 남에게 하게 하면 사동이에요.</dd></div>
+<div class="pz-term"><dt>중세 국어</dt><dd>소리 나는 대로 이어 적기(<span class="yet">기픈</span>), 주격 조사 ‘이/ㅣ/(없음)’, 어두 자음군(<span class="yet">ᄠᅳᆮ, ᄡᅳ다</span>), 지금은 쓰지 않는 글자(<span class="yet">ㆍ, ㅸ, ㆁ, ㆆ</span>), 뜻이 달라진 단어(<span class="yet">어리다</span>: 어리석다)를 기억해요.</dd></div>
+</dl>
+</section>
+</div>
+
+<!-- 문제 풀기 -->
+<div id="g-play" hidden>
+<div class="g-bar">
+<div class="g-bar-top"><strong id="g-stage-name"></strong><button type="button" class="btn-line btn-sm" id="g-quit">그만하기</button></div>
+<div class="g-progress" role="progressbar" aria-label="푼 문제" aria-valuemin="0" aria-valuemax="10" id="g-progress"><span id="g-progress-fill"></span></div>
+<p class="g-counts" id="g-counts"></p>
+</div>
+<div class="g-card">
+<h2 class="g-q" id="g-q" tabindex="-1"></h2>
+<div class="pz-board" id="g-board"></div>
+<div class="g-answers" id="g-answers"></div>
+<div class="g-feedback" id="g-feedback" role="status"></div>
+<div class="pz-extra" id="g-extra" hidden></div>
+</div>
+</div>
+
+<!-- 결과 -->
+<div id="g-result" hidden>
+<div class="g-card g-result-card" id="g-result-card"></div>
+</div>
+
+<div class="g-guide pad-sm">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700;">이용 안내</h2>
+<ul>
+<li>대결이 아니라 혼자 연습하는 게임이에요. 내 최고 기록을 넘어 보세요.</li>
+<li>2022 개정 교육과정 ‘화법과 언어’의 언어 단원을 다뤄요. 문제는 표준 발음법과 표준국어대사전 등으로 확인한 문제 묶음에서 한 판에 10문제씩 섞어 나와요.</li>
+<li>중세 국어 자료는 방점을 빼고 적었어요. 옛한글은 ‘나눔명조 옛한글’ 글꼴(SIL 오픈 폰트 라이선스)을 줄여서 보여 줘요.</li>
+<li>연습 기록(별·최고 기록)은 이 기기의 브라우저에만 저장돼요. 다른 기기에서는 새로 시작해요.</li>
+<li>틀려도 괜찮아요. 채점하면 물음마다 맞고 틀린 것과 정답, 설명이 나와요.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer style="background: #F2F0EB; color: #3D3D3D; border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 40px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 40px;">
+<img src="logo-full.png" alt="아벨학원 입시 전문 학원" width="720" height="631" style="display: block; width: 132px; height: auto;">
+<div style="flex: 1 1 380px; font-size: 15px; line-height: 1.9;">
+<div>학원명 아벨학원 · 교습과목 국어, 영어, 수학</div>
+<div>주소 경기도 안산시 상록구 이동 광덕1로 356(네스트빌) 201호</div>
+<div>전화 <a class="flink" href="tel:01020787098">010-2078-7098</a> · 운영 시간 오후 2시 ~ 오후 10시</div>
+</div>
+<nav class="fnav" aria-label="하단 메뉴" style="display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-weight: 500;">
+<a href="about.html" style="padding: 6px 0;">학원 소개</a>
+<a href="programs.html" style="padding: 6px 0;">교육과정</a>
+<a href="notices.html" style="padding: 6px 0;">공지사항</a>
+<a href="videos.html" style="padding: 6px 0;">학생 전용</a>
+<a href="contact.html" style="padding: 6px 0;">입학 상담</a>
+</nav>
+</div>
+<div style="border-top: 1px solid #E4E1DB;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 14px; color: #5C5C5C;">
+<a href="privacy.html" class="privacy-link">개인정보 처리방침</a>
+<span class="foot-right"><span>© 2026 아벨학원. All rights reserved.</span><a href="admin.html" class="adm-link" rel="nofollow">선생님</a></span>
+</div>
+</div>
+</footer>
+
+<script type="module" src="game-kor.js"></script>
+<script>
+setTimeout(function () {
+  var s = document.getElementById('g-status');
+  if (s && !s.hidden && s.textContent.indexOf('불러오는 중') === 0) s.textContent = '게임을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.';
+}, 10000);
+</script>
+<script type="module" src="session.js"></script>
+</body>
+</html>

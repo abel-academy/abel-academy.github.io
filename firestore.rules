@@ -159,7 +159,7 @@ service cloud.firestore {
         && d.builtin is string && d.builtin.size() <= 20
         && d.url is string && d.url.size() <= 300
         && (d.kind != 'link' || d.url.matches('^https://\\S+$'))
-        && (d.kind != 'builtin' || d.builtin in ['cube-net', 'proposition', 'that-train'])
+        && (d.kind != 'builtin' || d.builtin in ['cube-net', 'proposition', 'that-train', 'kor-grammar'])
         && d.get('subject', '') in ['', '국어', '영어', '수학']
         && d.visible is bool
         && d.order is int;

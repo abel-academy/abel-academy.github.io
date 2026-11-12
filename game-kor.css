@@ -1,0 +1,69 @@
+/* 학습 보조 게임: 문법 실험실 (game.css · game-prop.css 위에 덧붙임) */
+/* 옛한글 글꼴: 나눔명조 옛한글을 이 게임에 쓰는 글자만 남겨 줄인 것 (SIL 오픈 폰트 라이선스, yethangul-OFL.txt) */
+@font-face{font-family:'Abel YetHangul Subset';src:url('yethangul.woff') format('woff');font-display:swap}
+.yet{font-family:'Abel YetHangul Subset','Noto Serif KR',serif;font-weight:400}
+/* 문제 위쪽 */
+.kg-word{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 28px;border-radius:14px;background:#FFF7E6;border:1px solid #FFD8A8}
+.kg-word-cap{font-size:13px;font-weight:700;color:#8A4B00}
+.kg-word strong{font-size:34px;font-weight:800;letter-spacing:.02em}
+.kg-arrow{color:#8A4B00}
+.kg-sents{display:flex;flex-direction:column;gap:8px;width:100%;max-width:660px;padding:16px 18px;border-radius:14px;background:#FFF7E6;border:1px solid #FFD8A8}
+.kg-cap{margin:0;font-size:13px;font-weight:700;color:#8A4B00}
+.kg-sent{display:flex;align-items:baseline;gap:10px;margin:0;font-size:20px;font-weight:600;line-height:1.7;word-break:keep-all}
+.kg-sent.one{justify-content:center;text-align:center}
+.kg-sent-n{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#141414;color:#FFFFFF;font-size:15px;font-weight:700}
+.kg-mark{padding:0 3px;background:transparent;color:inherit;font-weight:800;text-decoration:underline;text-decoration-color:#FF5A1F;text-decoration-thickness:3px;text-underline-offset:5px}
+.kg-old{display:flex;flex-direction:column;gap:8px;width:100%;max-width:680px;margin:0;padding:18px 20px;border-radius:14px;background:#FBF8F1;border:1px solid #E4D8BC}
+.kg-old-text{margin:0;font-size:25px;line-height:1.9;word-break:keep-all}
+.kg-hl{text-decoration-color:#FF5A1F;text-decoration-thickness:3px;text-underline-offset:6px;background:#FFE9D6}
+.kg-old figcaption{font-size:13px;color:#5C5C5C}
+.kg-old-note{color:#8A8A8A}
+/* 물음 */
+.kg-parts{display:flex;flex-direction:column;gap:14px;width:100%;max-width:720px}
+.kg-part{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid #E4E1DB;border-radius:12px;background:#FFFFFF}
+.kg-part.ok{border-color:#8FCBA4;background:#F4FBF6}.kg-part.bad{border-color:#F0A99F;background:#FFF7F5}
+.kg-part-label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:16px;font-weight:700}
+.kg-part-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#2563EB;color:#FFFFFF;font-size:13px}
+.kg-res{font-size:14px}.kg-res.ok{color:#1E7A45}.kg-res.bad{color:#B42318}
+.kg-ans{margin:0;font-size:15px;color:#3D3D3D}
+.kg-chips{display:flex;flex-wrap:wrap;gap:8px}
+.kg-chip{min-height:46px;padding:0 14px;border:2px solid #CFCBC3;border-radius:10px;background:#FFFFFF;font-family:inherit;font-size:16px;font-weight:600;color:#141414;cursor:pointer;text-align:left}
+.kg-chips.dense .kg-chip{min-height:42px;padding:0 12px;font-size:15px}
+.kg-chip:hover:not(:disabled){border-color:#141414}
+.kg-chip[aria-pressed="true"]{border-color:#2563EB;background:#E8F0FE;color:#1D3F8F}
+/* 나누는 자리 */
+.kg-cutbox{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.kg-cutrow{display:flex;align-items:stretch}
+.kg-syl{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:60px;border:2px solid #141414;background:#FFF1C2;font-size:28px;font-weight:800}
+.kg-syl + .kg-syl{border-left-width:0}
+.kg-syl.tail{background:#F2F0EB;color:#8A8A8A;border-style:dashed}
+.kg-cut{width:30px;height:60px;margin:0 -1px;padding:0;border:2px dashed #8A8A8A;border-left:0;border-right:0;background:#FFFFFF;font-size:15px;color:#8A8A8A;cursor:pointer}
+.kg-cut:hover:not(:disabled){background:#FFF7E6;color:#141414}
+.kg-cut[aria-pressed="true"]{background:#2563EB;color:#FFFFFF;border-color:#2563EB}
+.kg-hint{flex:1 1 100%;margin:0;font-size:13px;color:#5C5C5C}
+/* 어절 고르기 */
+.kg-words{display:flex;flex-wrap:wrap;gap:8px}
+.kg-word-btn{min-height:50px;padding:0 14px;border:2px solid #141414;border-radius:10px;background:#FFFFFF;font-family:inherit;font-size:19px;font-weight:600;color:#141414;cursor:pointer}
+.kg-word-btn:hover:not(:disabled){background:#F7F6F3}
+.kg-word-btn[aria-pressed="true"]{border-color:#2563EB;background:#E8F0FE;color:#1D3F8F}
+/* 채점 표시 */
+.kg-chip:disabled,.kg-cut:disabled,.kg-word-btn:disabled{cursor:default;opacity:1}
+.kg-chip.is-right,.kg-word-btn.is-right{border-color:#1E8E4E;background:#C9EDD6;color:#141414}
+.kg-chip.is-wrong,.kg-word-btn.is-wrong{border-color:#B42318;background:#FDE2DE;color:#141414}
+.kg-chip.is-answer,.kg-word-btn.is-answer{border-color:#1E8E4E;border-style:dashed;color:#1E5E39}
+.kg-cut.is-right{background:#1E8E4E;color:#FFFFFF;border-color:#1E8E4E}
+.kg-cut.is-wrong{background:#B42318;color:#FFFFFF;border-color:#B42318}
+.kg-cut.is-answer{background:#C9EDD6;color:#1E5E39;border-color:#1E8E4E;border-style:solid}
+.kg-modern{width:100%;padding:14px 16px;border-radius:12px;background:#FFFFFF;border:1px solid #E4E1DB}
+.kg-modern p:last-child{margin:6px 0 0;font-size:16px;line-height:1.7}
+#kg-check{margin-top:6px}
+@media (max-width:640px){
+  .kg-word strong{font-size:28px}
+  .kg-sent{font-size:17px}
+  .kg-old-text{font-size:21px}
+  .kg-part{padding:12px}
+  .kg-chip{font-size:15px;padding:0 11px}
+  .kg-syl{min-width:44px;height:52px;font-size:24px}
+  .kg-cut{height:52px;width:26px}
+  .kg-word-btn{font-size:17px;padding:0 11px}
+}
