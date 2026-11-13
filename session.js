@@ -1,10 +1,12 @@
 // 모든 페이지 공통: 머리글의 '로그인 · 회원가입' ↔ '내 이름 · 로그아웃' 전환, 로그인 처리
 import * as be from './backend.js';
 import { el } from './common.js';
+import { startVisit, stopVisit, touch } from './visit.js';
 
 const box = document.getElementById('auth-links');
 const here = location.pathname.split('/').pop() || 'index.html';
 let currentUser = null;
+let manualLogin = false; // 로그인 화면에서 직접 로그인하는 중 (그쪽에서 접속을 기록함)
 
 function signedOutLinks() {
   if (!box) return;
@@ -27,14 +29,16 @@ function signedInLinks(label, href) {
 }
 
 async function update(user) {
-  if (!user) { signedOutLinks(); return; }
+  if (!user) { stopVisit(); signedOutLinks(); return; }
   try {
     const st = await be.getStudent(user.uid);
-    if (st && st.active) { signedInLinks(`${st.name}님`, 'videos.html'); return; }
+    // 저장된 로그인으로 들어와도 접속을 기록 (30분 넘게 쉬었다가 들어오면 새 접속)
+    if (st && st.active) { startVisit(st, manualLogin); signedInLinks(`${st.name}님`, 'videos.html'); return; }
     if (!st && (await be.isAdmin(user.uid))) { signedInLinks('선생님 화면', 'admin.html'); return; }
   } catch (e) {
     console.warn('로그인 상태 확인 실패', e);
   }
+  stopVisit();
   signedOutLinks(); // 회원 정보가 없거나 사용 중지된 계정
 }
 
@@ -50,6 +54,10 @@ if (be.configured) {
 // 학생 로그인: 아이디·비밀번호 확인 → 회원 정보·사용 상태 확인 → 접속 기록 1건 남김
 // 선생님 이메일로 로그인하면 { admin: true }를 돌려줌
 export async function logIn(id, password) {
+  manualLogin = true;
+  try { return await logInNow(id, password); } finally { manualLogin = false; }
+}
+async function logInNow(id, password) {
   const u = await be.signIn(id, password);
   const st = await be.getStudent(u.uid);
   if (!st) {
@@ -62,6 +70,7 @@ export async function logIn(id, password) {
     const code = st.guardianStatus === 'pending' ? 'app/pending' : 'app/inactive';
     throw Object.assign(new Error(code), { code });
   }
+  touch(st.uid);
   await be.recordLogin(st).catch((e) => console.warn('접속 기록 실패', e));
   return { student: st };
 }

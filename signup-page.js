@@ -1,6 +1,7 @@
 // 회원가입 페이지: 가입하면 바로 로그인되고 보충 강의를 볼 수 있음
 import * as be from './backend.js';
 import { refreshHeader } from './session.js';
+import { touch, quiet } from './visit.js';
 import { GRADES_ALL, UNDER14_GRADES, ID_RE, friendlyError } from './common.js';
 
 const $ = (s) => document.querySelector(s);
@@ -67,6 +68,7 @@ form.addEventListener('submit', async (e) => {
   btn.disabled = true; btn.textContent = '가입하는 중…';
   busy = true;
   try {
+    quiet(); // 가입이 끝나면 아래에서 접속을 직접 기록하므로, 그 사이 머리글이 따로 기록하지 않게
     const st = await be.signUp({ loginId, password: pw, name, grade, guardianName: needsGuardian ? guardianName : undefined, guardianPhone: needsGuardian ? guardianPhone : undefined });
     form.hidden = true;
     if (needsGuardian) {
@@ -77,6 +79,7 @@ form.addEventListener('submit', async (e) => {
       $('#su-done').hidden = false;
       $('#su-done').focus();
     } else {
+      touch(st.uid); // 방금 가입하며 접속을 기록했으니 머리글을 다시 그릴 때 또 기록하지 않음
       await be.recordLogin(st).catch((ex) => console.warn('접속 기록 실패', ex));
       await refreshHeader();
       $('#su-done-msg').textContent = `${name}님, 가입을 환영해요! 아이디 ${loginId}로 로그인되었어요.`;

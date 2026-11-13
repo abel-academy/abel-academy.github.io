@@ -781,7 +781,7 @@ function renderLoginStats() {
   $('#login-stats').replaceChildren(
     el('div', { class: 'kpis', style: 'margin-bottom:18px' },
       kpi(`최근 ${n}일 접속한 학생`, uniqueStudents.size, '명'),
-      kpi(`최근 ${n}일 로그인`, logins.length, '회'),
+      kpi(`최근 ${n}일 접속`, logins.length, '회'),
       kpi('하루 평균 접속 학생', Math.round((values.reduce((a, b) => a + b, 0) / n) * 10) / 10, '명')
     ),
     chart,
