@@ -1,4 +1,4 @@
-// 선생님 화면 → 학습 보조 기록: 학생이 학원 게임에서 끝까지 푼 판(단계)을 학생별·게임별로 보여 줘요.
+// 선생님 화면 → 학습 보조 기록: 학생이 학원 게임에서 끝까지 푼 판(단계)을 학생별·게임별로 보여 주고, 별을 초기화해요.
 // 화면(#view-learnlog)이 보일 때 불러와요. (admin.js와 따로 동작)
 import * as be from './backend.js';
 import { el, friendlyError, formatDateTime } from './common.js';
@@ -14,6 +14,9 @@ const timeText = (sec) => { const m = Math.floor(sec / 60), s = sec % 60; return
 const pct = (c, t) => (t ? `${Math.round((c / t) * 100)}%` : '—');
 let plays = null;
 let busy = false;
+let students = null;
+const GRADES = ['초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+const ms = (v) => (v == null ? 0 : typeof v.toMillis === 'function' ? v.toMillis() : v instanceof Date ? v.getTime() : typeof v === 'number' ? v : Date.parse(v) || 0);
 
 function kpi(label, value, unit, sub) {
   return el('div', { class: 'kpi' },
@@ -101,11 +104,79 @@ function render() {
     { empty: none, maxHeight: 520 }));
 }
 
+/* ── 별 초기화 ── */
+async function loadStudents(force) {
+  if (students && !force) { renderReset(); return; }
+  try {
+    students = (await be.listStudents()).filter((x) => x.active)
+      .sort((a, b) => GRADES.indexOf(a.grade) - GRADES.indexOf(b.grade) || String(a.name).localeCompare(String(b.name), 'ko'));
+    renderReset();
+  } catch (e) {
+    $('#sr-history').replaceChildren(el('p', { class: 'a-msg err', text: friendlyError(e) }));
+  }
+}
+function targetsOf(v) {
+  if (!students || !v) return [];
+  if (v === 'all') return students;
+  if (v.startsWith('g:')) return students.filter((x) => x.grade === v.slice(2));
+  return students.filter((x) => x.uid === v.slice(2));
+}
+function whoText(v, list) {
+  if (v === 'all') return `모든 학생(${list.length}명)`;
+  if (v.startsWith('g:')) return `${v.slice(2)} 학생 ${list.length}명`;
+  return list[0] ? `${list[0].name} 학생` : '';
+}
+function renderReset() {
+  const sel = $('#sr-who'), keep = sel.value;
+  const byGrade = GRADES.map((g) => [g, students.filter((x) => x.grade === g).length]).filter(([, n]) => n);
+  sel.replaceChildren(
+    el('option', { value: '', text: '누구의 별을 초기화할까요?' }),
+    el('option', { value: 'all', text: `모든 학생 (${students.length}명)` }),
+    byGrade.length ? el('optgroup', { label: '학년 전체' }, byGrade.map(([g, n]) => el('option', { value: `g:${g}`, text: `${g} 전체 (${n}명)` }))) : null,
+    students.length ? el('optgroup', { label: '학생 한 명' }, students.map((x) => el('option', { value: `u:${x.uid}`, text: `${x.name} · ${x.grade} · ${x.loginId}` }))) : null);
+  if ([...sel.options].some((o) => o.value === keep)) sel.value = keep;
+  // 초기화 내역: 한 번에 초기화한 학생끼리 묶어서
+  const groups = new Map();
+  students.forEach((x) => Object.entries(x.starReset || {}).forEach(([k, t]) => {
+    const at = ms(t); if (!at) return;
+    const id = `${at}|${k}`;
+    const g = groups.get(id) || { at, game: k, names: [] };
+    g.names.push(`${x.name}(${x.grade})`);
+    groups.set(id, g);
+  }));
+  const hist = [...groups.values()].sort((a, b) => b.at - a.at).slice(0, 50);
+  $('#sr-history').replaceChildren(table(['초기화한 때', '게임', '학생'],
+    hist.map((h) => el('tr', {}, el('td', { text: formatDateTime(new Date(h.at)) }), el('td', { text: h.game === 'all' ? '모든 게임' : titleOf(h.game) }),
+      el('td', { text: h.names.length > 3 ? `${h.names.slice(0, 3).join(', ')} 외 ${h.names.length - 3}명` : h.names.join(', ') }))),
+    { empty: '아직 초기화한 적이 없어요.', maxHeight: 320 }));
+}
+function srMsg(text, bad) { const m = $('#sr-msg'); m.textContent = text; m.className = 'a-msg ' + (bad ? 'err' : 'ok'); m.hidden = false; }
+async function doReset() {
+  const v = $('#sr-who').value, game = $('#sr-game').value;
+  if (!v) { srMsg('누구의 별을 초기화할지 골라 주세요.', true); $('#sr-who').focus(); return; }
+  if (typeof be.resetStars !== 'function') { srMsg('화면이 예전 버전이에요. 새로고침(Ctrl+F5) 해 주세요.', true); return; }
+  const list = targetsOf(v);
+  if (!list.length) { srMsg('초기화할 학생이 없어요.', true); return; }
+  const who = whoText(v, list), what = game ? `'${titleOf(game)}'` : '모든 게임';
+  if (!confirm(`${who}의 ${what} 별과 최고 기록을 초기화할까요?\n\n이미 푼 문제 목록과 연습 기록(점수·날짜)은 남아요. 지운 별은 되돌릴 수 없어요.`)) return;
+  const btn = $('#sr-go');
+  btn.disabled = true; btn.textContent = '초기화하는 중…';
+  try {
+    await be.resetStars(list.map((x) => x.uid), game);
+    srMsg(`${who}의 ${what} 별을 초기화했어요. 학생이 다음에 학습 보조나 게임을 열 때 0부터 시작해요.`);
+    await loadStudents(true);
+  } catch (e) {
+    srMsg(friendlyError(e), true);
+  } finally { btn.disabled = false; btn.textContent = '별 초기화'; }
+}
+
 if (view) {
+  $('#sr-game').append(...LEARN_BUILTINS.map((b) => el('option', { value: b.id, text: b.title })));
+  $('#sr-go').addEventListener('click', doReset);
   $('#ll-game').append(...LEARN_BUILTINS.map((b) => el('option', { value: b.id, text: b.title })));
   ['#ll-range', '#ll-grade', '#ll-game', '#ll-q'].forEach((s) => $(s).addEventListener('input', () => { if (plays) render(); }));
-  $('#ll-refresh').addEventListener('click', () => load(true));
+  $('#ll-refresh').addEventListener('click', () => { load(true); loadStudents(true); });
   // 화면이 보일 때마다(메뉴를 누르거나 화살표 키로 옮겨 와도) 불러와요
-  new MutationObserver(() => { if (!view.hidden) load(false); }).observe(view, { attributes: true, attributeFilter: ['hidden'] });
-  if (!view.hidden) load(false);
+  new MutationObserver(() => { if (!view.hidden) { load(false); loadStudents(false); } }).observe(view, { attributes: true, attributeFilter: ['hidden'] });
+  if (!view.hidden) { load(false); loadStudents(false); }
 }

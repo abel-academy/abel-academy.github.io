@@ -8,7 +8,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch, arrayUnion, arrayRemove
+  collection, query, where, orderBy, limit, serverTimestamp, increment, writeBatch, arrayUnion, arrayRemove, FieldPath
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 import { firebaseConfig, STUDENT_EMAIL_DOMAIN } from './firebase-config.js';
 import { UNDER14_GRADES, DEFAULT_SPECIALS, SUBJECTS } from './common.js';
@@ -291,6 +291,18 @@ export async function recordLearnPlay(student, p) {
     game: p.game, stage: p.stage, correct: p.correct, total: p.total, sec: p.sec,
     at: serverTimestamp()
   });
+}
+
+// 학습 보조 별 초기화 (선생님): 학생 문서 starReset.<게임 id 또는 all> 에 지금 시각을 남김
+// 학생 기기는 다음에 게임이나 학습 보조 탭을 열 때 그 게임의 별·최고 기록을 지워요.
+export async function resetStars(uids, gameId) {
+  need();
+  const key = gameId || 'all';
+  for (let i = 0; i < uids.length; i += 400) {
+    const batch = writeBatch(db);
+    uids.slice(i, i + 400).forEach((uid) => batch.update(doc(db, 'students', uid), new FieldPath('starReset', key), serverTimestamp()));
+    await batch.commit();
+  }
 }
 
 export async function listLearnPlays(max = 1000) {

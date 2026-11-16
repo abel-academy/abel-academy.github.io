@@ -5,6 +5,7 @@ import { el } from './common.js';
 import { loadRecord, saveRecord, totalStars } from './learn-records.js';
 import { checkBuiltin } from './learn-access.js';
 import { setPlayer, logPlay } from './learn-log.js';
+import { applyStarReset } from './learn-reset.js';
 import { makeQuestion, RELATION, inSet, subset, frac, num, hasBatchim } from './proposition.js';
 
 const $ = (s) => document.querySelector(s);
@@ -627,6 +628,7 @@ if (!be.configured) {
         const res = checkBuiltin(await be.listLearnGames(), GAME, st);
         if (!res.ok) { gate(res.text, true); return; }
         setPlayer(st);
+        applyStarReset(GAME, user.uid, st); // 선생님이 별을 초기화했으면 이 기기의 별·최고 기록을 지움
         startApp(user.uid, `${st.name} 학생의 연습`);
         return;
       }

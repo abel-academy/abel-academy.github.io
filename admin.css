@@ -497,3 +497,8 @@ body.tt-dragging{-webkit-user-select:none;user-select:none;cursor:grabbing}
 /* 학습 보조 기록: 이름을 누르면 그 학생 기록만 */
 .ll-name{padding:0;border:0;background:none;font:inherit;font-weight:700;color:#141414;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ll-name:hover{color:#2563EB}
+/* 별 초기화 */
+.sr-note{margin:0 0 14px;font-size:14px;line-height:1.7;color:#3D3D3D}
+.sr-form{margin-bottom:10px}
+.sr-h3{margin:18px 0 8px;font-size:16px;font-weight:700}
+#sr-who{max-width:100%}

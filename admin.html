@@ -407,6 +407,18 @@
 <div class="card"><div class="card-head"><h2>학생별 연습</h2></div><div id="ll-by-student"></div></div>
 <div class="card"><div class="card-head"><h2>게임별 연습</h2></div><div id="ll-by-game"></div></div>
 <div class="card"><div class="card-head"><h2>최근 기록</h2><span class="card-sub">최근 1,000건 중 300건까지 표시</span></div><div id="ll-log"></div></div>
+<div class="card" id="sr-card">
+<div class="card-head"><h2>별 초기화</h2><span class="card-sub">학생 기기에 저장된 별·최고 기록을 지워요</span></div>
+<p class="sr-note">초기화하면 학생이 다음에 학습 보조나 그 게임을 열 때 별·최고 기록이 0부터 다시 시작돼요. 같은 문제가 반복되지 않게 기억하는 <strong>이미 푼 문제 목록</strong>과 위의 <strong>연습 기록(점수·날짜)</strong>은 그대로 남아요.</p>
+<div class="a-filters sr-form">
+<select id="sr-who" class="a-input" aria-label="초기화할 학생"><option value="">불러오는 중…</option></select>
+<select id="sr-game" class="a-input" aria-label="초기화할 게임"><option value="">모든 게임</option></select>
+<button type="button" class="a-btn danger" id="sr-go">별 초기화</button>
+</div>
+<p id="sr-msg" class="a-msg" role="status" hidden></p>
+<h3 class="sr-h3">초기화 내역</h3>
+<div id="sr-history"></div>
+</div>
 </section>
 <section id="view-notices" class="view" role="tabpanel" aria-labelledby="nav-notices" hidden>
 <div class="view-head">

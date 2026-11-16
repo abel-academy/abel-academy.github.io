@@ -4,6 +4,7 @@ import { el, friendlyError, subjectsOf, SUBJECT_CLASS } from './common.js';
 import { LEARN_BUILTINS } from './learn-games.js';
 import { canPlay, whoCanPlay } from './learn-access.js';
 import { loadRecord, totalStars } from './learn-records.js';
+import { applyStarReset } from './learn-reset.js';
 
 const builtinOf = (g) => (g.kind === 'builtin' ? LEARN_BUILTINS.find((b) => b.id === g.builtin) : null);
 // 아이콘 색을 정할 과목: 선생님이 정한 과목, 없으면 학원 게임의 원래 과목 (국어 주황 · 영어 노랑 · 수학 파랑)
@@ -84,6 +85,8 @@ export async function renderLearn(box, st, adminPreview, uid) {
     .filter((g) => g.visible !== false)
     .filter((g) => (g.kind === 'link' ? /^https:\/\//.test(g.url || '') : Boolean(builtinOf(g))))
     .sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.title).localeCompare(String(b.title), 'ko'));
+  // 선생님이 별을 초기화했으면 카드의 별도 0부터
+  if (!adminPreview && st) all.forEach((g) => { const b = builtinOf(g); if (b) applyStarReset(b.id, uid, st); });
   const head = el('div', { class: 'vhead' },
     el('h2', { text: '학습 보조' }),
     all.length ? el('span', { class: 'vcount', text: `게임 ${all.length}개` }) : null);
